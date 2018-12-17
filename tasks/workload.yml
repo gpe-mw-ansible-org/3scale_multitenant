@@ -1,0 +1,223 @@
+---
+
+# Plagarized (and modified for this course) from:  https://github.com/nmasse-itix/OpenShift-Lab/tree/master/roles/3scale
+# Thank you nmasse-itix !
+#
+# Use this ansible play for this course only.
+# Afterwards, leverage (and contribute to) the original ansible playbook created by nmasse-itix.
+
+- name: check if user is cluster admin
+  shell: "oc get project default"
+  register: default_project_result
+  ignore_errors: true
+  changed_when: false
+
+- fail:
+    msg: "User does not have cluster-admin rights"
+  when: default_project_result is failed
+
+- name: check if API Manager deployed
+  shell: "oc get project {{ocp_project}}"
+  register: api_project_result
+  ignore_errors: true
+  changed_when: false
+
+- name: "Create project {{ocp_project}}"
+  shell: "oc new-project {{ocp_project}} --display-name={{ocp_project}}"
+  when: api_project_result is failed
+
+- name: "Label namespace"
+  command: "oc label namespace {{ocp_project}} AAD='{{ocp_amp_admin_id}}'"
+  when: api_project_result is failed
+
+- name: Make sure we go back do default project
+  shell: "oc project default"
+  when: api_project_result is failed
+
+################      Multitenent  AMP        #####################
+
+- name: "Make conditional variable based on {{is_shared_cluster}}"
+  set_fact:
+    threescale_template: "{{threescale_template_shared}}"
+  when: is_shared_cluster|bool
+- set_fact:
+    threescale_template: "{{threescale_template_dedicated}}"
+  when: not is_shared_cluster|bool
+
+- name: Ensure {{work_dir}} exists
+  file:
+    path: "{{work_dir}}"
+    state: directory
+
+- name: Delete default limitrange
+  shell: |
+    oc delete limitrange {{ocp_project}}-core-resource-limits -n {{ocp_project}}
+  ignore_errors: true
+
+- name: Create a new limitrange
+  template:
+    src: templates/limitrange.yaml
+    dest: "{{work_dir}}/limitrange.yaml"
+- shell: |
+    oc create -f {{work_dir}}/limitrange.yaml -n {{ocp_project}}
+
+- name: "Download {{ threescale_template }}"
+  get_url:
+    url: "{{ threescale_template }}"
+    dest: "{{modified_template_path}}"
+    force: yes
+  when: api_project_result is failed
+
+- name: Place all deployments in a paused state
+  replace:
+    path: "{{ modified_template_path }}"
+    regexp: '(replicas: 1\n)'
+    replace: '\1    paused: true\n'
+
+- block:
+    - name: Reduce RAM resource limit on _redis_ databases
+      command: sed -i 's/32Gi/2Gi/' "{{modified_template_path}}"
+
+    - name: Reduce CPU resource limits and requests across all deployments
+      replace:
+        path: "{{ modified_template_path }}"
+        regexp: '(cpu: 500m)'
+        replace: 'cpu: 250m'
+    - replace:
+        path: "{{ modified_template_path }}"
+        regexp: '(cpu: 1\n)'
+        replace: 'cpu: 300m'
+    - replace:
+        path: "{{ modified_template_path }}"
+        regexp: '(cpu: 2\n)'
+        replace: 'cpu: 300m'
+  when: not is_shared_cluster|bool
+
+
+- name: Process the OpenShift Template and create the OpenShift objects for the 3scale API Management Platform
+  shell: |
+      oc new-app -f "{{ modified_template_path }}" \
+                 -p "MASTER_NAME={{ocp_project}}-master" \
+                 -p "MASTER_PASSWORD={{amp_master_passwd}}" \
+                 -p "MASTER_ACCESS_TOKEN={{master_access_token}}" \
+                 -p "TENANT_NAME={{ocp_project}}" \
+                 -p "ADMIN_PASSWORD={{ amp_admin_passwd }}" \
+                 -p "WILDCARD_DOMAIN={{ ocp_apps_domain }}" \
+                 -n "{{ ocp_project }}" \
+                 > {{new_app_output}}
+  when: api_project_result is failed
+
+- name: output message
+  debug:
+    msg: new-app output available at {{new_app_output}}
+  when: api_project_result is failed
+
+- name: "Modify smtp config map"
+  command: oc patch configmap smtp -p "{\"data\":{\"address\":\"{{smtp_host}}\"}}" -n {{ocp_project}}
+- command: oc patch configmap smtp -p "{\"data\":{\"port\":\"{{smtp_port}}\"}}" -n {{ocp_project}}
+- command: oc patch configmap smtp -p "{\"data\":{\"authentication\":\"{{smtp_authentication}}\"}}" -n {{ocp_project}}
+- command: oc patch configmap smtp -p "{\"data\":{\"username\":\"{{smtp_userid}}\"}}" -n {{ocp_project}}
+- command: oc patch configmap smtp -p "{\"data\":{\"password\":\"{{smtp_passwd}}\"}}" -n {{ocp_project}}
+
+
+# #### Storage Tier
+- name: "Resume {{with_items}}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ ocp_project }}"
+  with_items:
+    - backend-redis
+    - system-memcache
+    - system-mysql
+    - system-redis
+    - zync-database
+  when: api_project_result is failed
+
+- include_tasks: wait_for_deploy.yml
+  vars:
+    pod_to_wait:
+      - backend-redis
+      - system-memcache
+      - system-mysql
+      - system-redis
+      - zync-database
+  when: api_project_result is failed
+
+
+# #### Backend Listeners
+- name: "Resume {{with_items}}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ ocp_project }}"
+  with_items:
+    - backend-listener
+    - backend-worker
+  when: api_project_result is failed
+- include_tasks: wait_for_deploy.yml
+  vars:
+    pod_to_wait:
+      - backend-listener
+      - backend-worker
+  when: api_project_result is failed
+
+# #### System Tier
+- name: "Resume {{with_items}}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ ocp_project }}"
+  with_items:
+    - system-app
+  when: api_project_result is failed
+- include_tasks: wait_for_deploy.yml
+  vars:
+    pod_to_wait:
+      - system-app
+  when: api_project_result is failed
+
+# #### Utility Tier
+- name: "Resume {{with_items}}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ ocp_project }}"
+  with_items:
+    - system-sidekiq
+    - system-sphinx
+    - backend-cron
+  when: api_project_result is failed
+- include_tasks: wait_for_deploy.yml
+  vars:
+    pod_to_wait:
+      - system-sidekiq
+      - system-sphinx
+      - backend-cron
+  when: api_project_result is failed
+
+
+# #### Gateway Tier
+- name: "Resume {{with_items}}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ ocp_project }}"
+  with_items:
+    - apicast-staging
+    - apicast-production
+    - apicast-wildcard-router
+  when: api_project_result is failed
+- include_tasks: wait_for_deploy.yml
+  vars:
+    pod_to_wait:
+      - apicast-staging
+      - apicast-production
+      - apicast-wildcard-router
+  when: api_project_result is failed
+
+# #### Zync / RHSSO Sync Tier
+- name: "Resume {{with_items}}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ ocp_project }}"
+  with_items:
+    - zync
+  when: api_project_result is failed
+- include_tasks: wait_for_deploy.yml
+  vars:
+    pod_to_wait:
+      - zync
+  when: api_project_result is failed
+
+- name: Annotate the empty project as requested by user
+  shell: "oc annotate namespace {{ocp_project}} openshift.io/requester={{ocp_amp_admin_id}} --overwrite"
+###################################################################
+
+
+- name: workload Tasks Complete
+  debug:
+    msg: workload Tasks Complete

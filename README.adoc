@@ -1,0 +1,198 @@
+:scrollbar:
+:data-uri:
+:toc2:
+:linkattrs:
+
+= 3scale-multitenant
+
+:numbered:
+
+== Overview
+
+This workload provisions a single centralized 3scale API Manager in a single OCP namespace called: 3scale-mt-{{ocp_amp_admin_id}}.
+
+This workload only needs to be executed once per OCP cluster.
+
+It also allows for management (ie: creation / deletion) of a configurable number of API _tenants_ in the 3scale API Manager installation.
+
+This role might be valuable in the following circumstances:
+
+. *Instructor Led Training (ILTs), Hackathons and workshops*:
++
+Given X number of students in an ILT requiring 3scale, provision a single central multi-tenant Red Hat 3scale API Manager where each student is assigned their own tenant.
++
+The student is provided with administrative credentials to their assigned tenant.
++
+This approach might be more desirable than the alternative where each student provisions their own 3scale API Manager.
+
+. *Red Hat 3scale enablement*
++
+A few learning objectives might be:
+
+.. Demonstrate the provisioning of 3scale on OCP.
+.. Integration with an external smtp provider to send out emails and facilitate a user self-registration workflow.
+.. Invocation of the REST Admin API of 3scale using OAuth2 _access_ and _refresh_ tokens.
+
+=== Prerequisites and assumptions
+
+. Using a version of oc utility that corresponds to your target OCP cluster, ensure oc utility is already authenticated as the cluster-admin.
+. This workload requires installation of the lxml python module on target host executing this ansible. ie:
++
+-----
+# dnf install python2-lxml
+-----
+
+. Resource utilization: _is_shared_cluster = true_
+.. The cluster quota for both CPU and RAM is set fairly high by default:
+... CPU limit:  30 cores
+... RAM limit:  30 Gi
+.. The cpu and RAM limits defined in the 3scale API Manager template are also set fairly high. 
+.. These default settings are set intentionally high to allow for high throughput
+. Resource utilization: _is_shared_cluster = false_
++
+The resources need to provision 3scale drops down to about 12 Gi RAM and 6 CPU
+
+. smtp provider
++
+You'll want to have registered with an smtp provider to enable the 3scale API Manager with the ability to send emails.
++
+A recommended, zero-cost smtp provider is:   link:https://www.sendgrid.com[sendgrid].
+SendGrid's zero-cost membership allows for a genereous number of outbound emails that meet the needs of a typical enablement training.
+
+=== TO-DOs
+
+. Implement tenant deletion
+
+
+== 3scale Deployment
+
+=== Environment Variables
+
+-----
+# Update the following:
+$ echo "export ocp_amp_admin_id=api0" >> ~/.bashrc
+
+# Execute the following:
+$ source ~/.bashrc
+
+
+# SMTP Configurations to enable API Manager to send emails
+$ smtp_host=smtp.sendgrid.net
+$ smtp_port=587
+$ smtp_authentication=plain
+$ smtp_userid=<change me>
+$ smtp_passwd=<change me>
+$ adminEmailUser=<change me>            #   ie:  jdoe
+$ adminEmailDomain=<change me>          #   ie:  redhat.coom
+
+
+
+# Copy-n-paste the following:
+SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+
+-----
+
+=== Ansible Set-up
+
+. Install this role locally
++
+-----
+$ ansible-galaxy install jbride.3scale-multitenant
+-----
+
+. Create Playbook:
++
+-----
+$ echo "
+- hosts: all
+  become: false
+  gather_facts: False
+  vars_files:
+  roles:
+    - jbride.3scale-multitenant
+" > /tmp/3scale_multitenant.yml
+-----
+
+=== Provision 3scale API manager
+
+The OCP namespace for 3scale multi-tenant app will be owned by the following user: {{ocp_amp_admin_id}}.
+
+{{ocp_amp_admin_id}} will be assigned a clusterquota so as to manage limits and requests assigned to 3scale
+
+. Execute:
++
+-----
+
+# API manager provision
+$ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
+                    -e"ACTION=create" \
+                    -e"subdomain_base=$SUBDOMAIN_BASE" \
+                    -e"ocp_amp_admin_id=$ocp_amp_admin_id" \
+                    -e"smtp_port=$smtp_port" \
+                    -e"smtp_authentication=$smtp_authentication" \
+                    -e"smtp_host=$smtp_host" \
+                    -e"smtp_userid=$smtp_userid" \
+                    -e"smtp_passwd=$smtp_passwd" \
+                    -e"is_shared_cluster=true"
+-----
+
+
+=== Tenant management
+
+. This workload can optionally create multiple tenants in this single multi-tenant 3scale.  If so then ensure the following when invoking this ansible:
+
+.. specify ACTION = "tenant_mgmt"
+.. specify "start_tenant" and "end_tenant" variables
+.. set value of CREATE_GWS_WITH_EACH_TENANT (true / false) to automate provisioning of a staging and production GW for each tenant
+
+
+-----
+START_TENANT=1
+END_TENANT=1
+CREATE_TENANTS=true                         :   if set to false, then will delete tenants
+CREATE_GWS_WITH_EACH_TENANT=true            :   if set to true, then an API gateway & project will be created for each corresponding tenant in the same OCP cluster where API Manager resides
+
+# Tenant Management
+$ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
+                    -e"ACTION=tenant_mgmt" \
+                    -e"subdomain_base=$SUBDOMAIN_BASE" \
+                    -e"ocp_amp_admin_id=$ocp_amp_admin_id" \
+                    -e"start_tenant=$START_TENANT" \
+                    -e"end_tenant=$END_TENANT" \
+                    -e"create_tenants=$CREATE_TENANTS" \
+                    -e"adminEmailUser=$adminEmailUser" \
+                    -e"adminEmailDomain=$adminEmailDomain" \
+                    -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT"
+-----
+
+. After the tenant provisioning completes, you will see messages similar to the following at the end of the ansible standard out:
++
+-----
+ok: [localhost] => {
+    "msg": [
+        "tenant_output_dir:  /home/jbride/provisioning_output/3295.openshift.opentlc.com/3scale_tenants_api0",
+        "tenant_provisioning_log_file = /home/jbride/provisioning_output/3295.openshift.opentlc.com/3scale_tenants_api0/api0_tenant_provisioning.log",
+        "tenant_provisioning_results_file = /home/jbride/provisioning_output/3295.openshift.opentlc.com/3scale_tenants_api0/api0_tenant_info_file_1_2.txt",
+        "start and end tenants = 1  2",
+        "create API Gateways for each tenant = true"
+    ]
+}
+-----
++
+Feel free to review the files mentioned in those output messages.
+
+. The _tenant_provisioning_results_file_ is particularly important to share details about API tenants with students.
++
+This is a tab delimited file that can be imported into Google Spreadsheets and made accessible to students.
+
+
+=== Delete 3scale API manager
+
+-----
+REMOVE_TENANTS_ONLY=true
+$ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
+                    -e"ACTION=remove" \
+                    -e"subdomain_base=$SUBDOMAIN_BASE" \
+                    -e"REMOVE_TENANTS_ONLY=$REMOVE_TENANTS_ONLY" \
+                    -e"ocp_amp_admin_id=$ocp_amp_admin_id"
+-----

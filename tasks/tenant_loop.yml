@@ -1,0 +1,179 @@
+---
+
+- set_fact:
+    orgName: "{{tenantAdminId}}-{{ocp_project}}"
+- set_fact:
+    output_file: "{{orgName}}-tenant-signup.xml"
+
+
+#  ################################             Create Tenant            ##################################### #
+
+- block:
+    - name: "{{tenantAdminId}}      1)  **********   TENANT CREATION  **********"
+      set_fact:
+        tenantAdminEmail: "{{adminEmailUser}}%2B{{item}}%40{{adminEmailDomain}}"
+    - debug:
+        msg: "{{tenantAdminId}} tenantAdminEmail = {{tenantAdminEmail}}" 
+
+      # NOTE:  As of 3scale 2.2, this operation is not idempotent.
+      #        It creates a new tenant given the same parameters.
+      #        Public and Admin domains of these tenants are different; ie:
+      #         user1-3scale-mt-amp0-3-admin.apps.3295.openshift.opentlc.com 
+      #         user1-3scale-mt-amp0-2-admin.apps.3295.openshift.opentlc.com
+    - uri:
+        url: "{{create_tenant_url}}"
+        method: POST
+        headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        body: "access_token={{master_access_token}}&org_name={{orgName}}&username={{tenantAdminId}}&password={{tenantAdminPasswd}}&email={{tenantAdminEmail}}"
+        timeout: 20
+        status_code: 201
+        return_content: yes
+      register: create_tenant_response
+
+    - name: "{{tenantAdminId}}     2) copy response to {{tenant_output_dir}}/{{output_file}}"
+      copy:
+        content: "{{create_tenant_response.content}}"
+        dest: "{{tenant_output_dir}}/{{output_file}}"
+
+    - name: "{{tenantAdminId}}     3) parse xml and extract access token, account_id and user_id"
+      xml:
+        path: "{{tenant_output_dir}}/{{output_file}}"
+        xpath: //access_token/value
+        content: text
+      register: tenant_access_token
+    - xml:
+        path: "{{tenant_output_dir}}/{{output_file}}"
+        xpath: //account/id
+        content: text
+      register: account_id 
+    - xml:
+        path: "{{tenant_output_dir}}/{{output_file}}"
+        xpath: //user[state = "pending"]/id
+        content: text
+      register: user_id 
+    - debug:
+        msg: "{{tenant_access_token.matches[0].value}}  {{account_id.matches[0].id}} {{user_id.matches[0].id}}"
+        verbosity: 0
+
+    - name: "{{tenantAdminId}}     4) activate new user"
+      set_fact:
+        activate_user_url: "https://{{ocp_project}}-master-admin.{{ocp_apps_domain}}/admin/api/accounts/{{account_id.matches[0].id}}/users/{{user_id.matches[0].id}}/activate.xml"
+    - uri:
+        url: "{{activate_user_url}}"
+        method: PUT
+        body: "access_token={{master_access_token}}"
+        timeout: 10
+        status_code: 200
+        return_content: yes
+      register: activate_user_response
+
+    - name: "{{tenantAdminId}}     5) Give user view access to 3scale project."
+      command: "oc adm policy add-role-to-user view {{tenantAdminId}} -n {{ocp_project}}"
+
+    - name: "{{tenantAdminId}}    6) Create corresponding route on 3scale AMP system-provider service"
+      command: "oc create route edge {{orgName}}-provider --service=system-provider --hostname={{orgName}}-admin.{{ocp_apps_domain}} -n {{ocp_project}}"
+      register: create_sys_provider_route
+      failed_when: create_sys_provider_route.stderr != ""  and 'AlreadyExists' not in create_sys_provider_route.stderr
+    - debug:
+        msg: "create_sys_provider_route.stderr = {{create_sys_provider_route.stderr}}"
+        verbosity: 1
+
+    - name: "{{tenantAdminId}}   7) Create corresponding route on 3scale AMP system-developer service"
+      command: "oc create route edge {{orgName}}-developer --service=system-developer --hostname={{orgName}}.{{ocp_apps_domain}} -n {{ocp_project}}"
+      register: create_sys_developer_route
+      failed_when: create_sys_developer_route.stderr != "" and 'AlreadyExists' not in create_sys_developer_route.stderr
+
+    - name: "{{tenantAdminId}}  8) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
+      lineinfile: 
+        line: "{{tenantAdminId}}\t{{ocp_user_passwd}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{tenantAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
+        path: "{{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
+        create: yes
+        state: present
+
+  when: create_tenants|bool
+
+#  ########################################################################################################## #
+ 
+
+
+
+#  ############                 Create Corresponding API Gateways for each Tenant                   ######### #
+
+# if create_gws_with_each_tenant is set to true, then an API gateway & project will be created for each corresponding tenant in the same OCP cluster where API Manager resides
+# If create_gws_with_each_tenant is set to false, then the assumption that API gateways will be created outside of the OCP cluster where 3scale API Manager resides
+- block:
+    - name: "{{tenantAdminId}}      1)  **********   TENANT API GW  **********"
+      command: "oc adm new-project {{tenantAdminId}}-gw --admin={{tenantAdminId}}  --description={{tenantAdminId}}-gw"
+      register: create_proj
+      failed_when: create_proj.stderr != ""  and 'already exists' not in create_proj.stderr
+
+    - set_fact:
+        THREESCALE_PORTAL_ENDPOINT: "https://{{tenant_access_token.matches[0].value}}@{{orgName}}-admin.{{ocp_apps_domain}}"
+    - set_fact:
+        BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{ocp_project}}:3000"
+    - set_fact:
+        REDIS_URL: "redis://system-redis.{{ocp_project}}:6379/1"
+
+    - name: "{{tenantAdminId}} Create Staging Gateway"
+      shell: |
+        oc new-app \
+               -f {{tenant_output_dir}}/3scale-apicast.yml \
+               --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
+               --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
+               --param REDIS_URL={{REDIS_URL}} \
+               --param APP_NAME=stage-apicast \
+               --param ROUTE_NAME={{orgName}}-mt-stage-generic \
+               --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
+               --param THREESCALE_DEPLOYMENT_ENV=sandbox \
+               --param APICAST_CONFIGURATION_LOADER=lazy \
+               -n {{tenantAdminId}}-gw
+      register: create_stage_gw
+      failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
+
+    - name: "{{tenantAdminId}} Create Production Gateway"
+      shell: |
+        oc new-app \
+               -f {{tenant_output_dir}}/3scale-apicast.yml \
+               --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
+               --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
+               --param REDIS_URL={{REDIS_URL}} \
+               --param APP_NAME=prod-apicast \
+               --param ROUTE_NAME={{orgName}}-mt-prod-generic \
+               --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
+               --param THREESCALE_DEPLOYMENT_ENV=production \
+               --param APICAST_CONFIGURATION_LOADER=lazy \
+               -n {{tenantAdminId}}-gw
+      register: create_prod_gw
+      failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
+
+  when: create_tenants|bool and create_gws_with_each_tenant|bool
+
+#  ########################################################################################################## #
+
+
+
+
+ 
+ 
+#  ################################             Delete Tenant            ##################################### #
+#  URI of tenant delete API is:  
+#          /master/api/providers/{id}.xml
+#  As of 3scale API Manager v2.2, there is not an API resource that allows for tenant lookup
+#  TO-DO: 
+#       implement mechanism to identify id of tenant.  
+#       Probably best to do so as an xml file that is populated with creation of each tenant.
+#       In this section, the tenant xml snippet is located and deleted in this xml file
+ 
+- block:
+    - name: "{{tenantAdminId}}      **********   REALM DELETION  **********"
+      debug:
+        msg: "done"
+  when: not create_tenants|bool
+#  ########################################################################################################## #
+
+
+
+
+- pause:
+    seconds: "{{tenant_loop_delay}}"
