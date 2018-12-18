@@ -149,7 +149,6 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
 -----
 START_TENANT=1
 END_TENANT=1
-CREATE_TENANTS=true                         :   if set to false, then will delete tenants
 CREATE_GWS_WITH_EACH_TENANT=true            :   if set to true, then an API gateway & project will be created for each corresponding tenant in the same OCP cluster where API Manager resides
 
 # Tenant Management
@@ -159,7 +158,6 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ocp_amp_admin_id=$ocp_amp_admin_id" \
                     -e"start_tenant=$START_TENANT" \
                     -e"end_tenant=$END_TENANT" \
-                    -e"create_tenants=$CREATE_TENANTS" \
                     -e"adminEmailUser=$adminEmailUser" \
                     -e"adminEmailDomain=$adminEmailDomain" \
                     -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT"

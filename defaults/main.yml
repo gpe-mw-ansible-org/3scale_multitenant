@@ -73,6 +73,11 @@ smtp_passwd: changeme
 ######   new tenants    #######
 create_gws_with_each_tenant: "true"
 
+tenant_api_gw_template_url: "https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/rhte/3scale-apicast.yml"
+
+adminEmailUser: changeme
+adminEmailDomain: "changeme.com"
+
 tenant_output_dir: "{{new_app_output_dir}}/3scale_tenants_{{ocp_amp_admin_id}}"
 tenant_provisioning_log_file: "{{ocp_amp_admin_id}}_tenant_provisioning.log"
 start_tenant: 1

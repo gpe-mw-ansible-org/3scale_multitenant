@@ -16,7 +16,9 @@
   when: ACTION == "create" or ACTION == "provision" or ACTION == "apimanager"
 
 - name: Running Tenant Provision Tasks
-  import_tasks: ./tenant_mgmt.yml
+  set_fact:
+    create_or_delete_tenants: create
+- import_tasks: ./tenant_mgmt.yml
   become: "{{ become_override | bool }}"
   when: ACTION == ACTION == "create" or ACTION == "provision" or "tenant_mgmt"
 
@@ -28,4 +30,7 @@
 - name: Running Workload removal Tasks
   import_tasks: ./remove_workload.yml
   become: "{{ become_override | bool }}"
+- set_fact:
+    create_or_delete_tenants: delete
+- import_tasks: ./tenant_mgmt.yml
   when: ACTION == "destroy" or ACTION == "remove"

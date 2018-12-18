@@ -29,6 +29,7 @@
         timeout: 20
         status_code: 201
         return_content: yes
+        validate_certs: no
       register: create_tenant_response
 
     - name: "{{tenantAdminId}}     2) copy response to {{tenant_output_dir}}/{{output_file}}"
@@ -58,7 +59,7 @@
 
     - name: "{{tenantAdminId}}     4) activate new user"
       set_fact:
-        activate_user_url: "https://{{ocp_project}}-master-admin.{{ocp_apps_domain}}/admin/api/accounts/{{account_id.matches[0].id}}/users/{{user_id.matches[0].id}}/activate.xml"
+        activate_user_url: "https://{{ocp_project}}-master.{{ocp_apps_domain}}/admin/api/accounts/{{account_id.matches[0].id}}/users/{{user_id.matches[0].id}}/activate.xml"
     - uri:
         url: "{{activate_user_url}}"
         method: PUT
@@ -66,6 +67,7 @@
         timeout: 10
         status_code: 200
         return_content: yes
+        validate_certs: no
       register: activate_user_response
 
     - name: "{{tenantAdminId}}     5) Give user view access to 3scale project."
@@ -91,7 +93,7 @@
         create: yes
         state: present
 
-  when: create_tenants|bool
+  when: create_or_delete_tenants == "create"
 
 #  ########################################################################################################## #
  
@@ -118,7 +120,7 @@
     - name: "{{tenantAdminId}} Create Staging Gateway"
       shell: |
         oc new-app \
-               -f {{tenant_output_dir}}/3scale-apicast.yml \
+               -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
                --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param REDIS_URL={{REDIS_URL}} \
@@ -134,7 +136,7 @@
     - name: "{{tenantAdminId}} Create Production Gateway"
       shell: |
         oc new-app \
-               -f {{tenant_output_dir}}/3scale-apicast.yml \
+               -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
                --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param REDIS_URL={{REDIS_URL}} \
@@ -147,7 +149,7 @@
       register: create_prod_gw
       failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
 
-  when: create_tenants|bool and create_gws_with_each_tenant|bool
+  when: create_or_delete_tenants == "create" and create_gws_with_each_tenant|bool
 
 #  ########################################################################################################## #
 
@@ -169,7 +171,7 @@
     - name: "{{tenantAdminId}}      **********   REALM DELETION  **********"
       debug:
         msg: "done"
-  when: not create_tenants|bool
+  when: create_or_delete_tenants == "delete"
 #  ########################################################################################################## #
 
 
