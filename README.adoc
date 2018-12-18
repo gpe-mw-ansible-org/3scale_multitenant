@@ -88,7 +88,7 @@ $ adminEmailDomain=<change me>          #   ie:  redhat.coom
 
 
 # Copy-n-paste the following:
-SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
 
 -----
 
