@@ -83,12 +83,12 @@ $ smtp_authentication=plain
 $ smtp_userid=<change me>
 $ smtp_passwd=<change me>
 $ adminEmailUser=<change me>            #   ie:  jdoe
-$ adminEmailDomain=<change me>          #   ie:  redhat.coom
+$ adminEmailDomain=<change me>          #   ie:  redhat.com
 
 
 
 # Copy-n-paste the following:
-SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`                           #   OCP wildcard DNS after "apps";  ie; 2345.openshift.opentlc.com
 
 -----
 

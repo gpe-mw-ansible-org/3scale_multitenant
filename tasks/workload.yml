@@ -112,12 +112,16 @@
     msg: new-app output available at {{new_app_output}}
   when: api_project_result is failed
 
+# Only set-up smtp if all settings are correct
+# Otherwise, errors will be thrown during provisioning of tenents if smtp settings are incorrect
 - name: "Modify smtp config map"
-  command: oc patch configmap smtp -p "{\"data\":{\"address\":\"{{smtp_host}}\"}}" -n {{ocp_project}}
-- command: oc patch configmap smtp -p "{\"data\":{\"port\":\"{{smtp_port}}\"}}" -n {{ocp_project}}
-- command: oc patch configmap smtp -p "{\"data\":{\"authentication\":\"{{smtp_authentication}}\"}}" -n {{ocp_project}}
-- command: oc patch configmap smtp -p "{\"data\":{\"username\":\"{{smtp_userid}}\"}}" -n {{ocp_project}}
-- command: oc patch configmap smtp -p "{\"data\":{\"password\":\"{{smtp_passwd}}\"}}" -n {{ocp_project}}
+  block:
+    - command: oc patch configmap smtp -p "{\"data\":{\"address\":\"{{smtp_host}}\"}}" -n {{ocp_project}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"port\":\"{{smtp_port}}\"}}" -n {{ocp_project}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"authentication\":\"{{smtp_authentication}}\"}}" -n {{ocp_project}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"username\":\"{{smtp_userid}}\"}}" -n {{ocp_project}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"password\":\"{{smtp_passwd}}\"}}" -n {{ocp_project}}
+  when: smtp_userid != "changeme"
 
 
 # #### Storage Tier
