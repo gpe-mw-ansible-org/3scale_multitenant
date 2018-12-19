@@ -69,7 +69,6 @@ smtp_userid: changeme
 smtp_passwd: changeme
 
 
-
 ######   new tenants    #######
 create_gws_with_each_tenant: "true"
 
