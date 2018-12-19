@@ -6,19 +6,19 @@ ocp_user_groups:
 
 ocp_amp_admin_id: api0
 
-ocp_user_needs_quota: True
+ocp_user_needs_quota: true
 
 # dedicated API Manager
 quota_requests_cpu: 4
-quota_limits_cpu: 6 
+quota_limits_cpu: 6
 quota_requests_memory: '16Gi'
 quota_limits_memory: '24Gi'
 
 # shared API Manager
-#quota_requests_cpu: 20
-#quota_limits_cpu: 30
-#quota_requests_memory: '20Gi'
-#quota_limits_memory: '30Gi'
+# quota_requests_cpu: 20
+# quota_limits_cpu: 30
+# quota_requests_memory: '20Gi'
+# quota_limits_memory: '30Gi'
 
 
 quota_configmaps: 15
@@ -47,7 +47,7 @@ is_shared_cluster: false
 threescale_template_shared: https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/rhte/3scale-amp-2.2-higher-limits.yml
 
 # Use this for 3scale AMP on dedicated single VM
-#threescale_template_dedicated: https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/3scale-amp-2.2.yml
+# threescale_template_dedicated: https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/3scale-amp-2.2.yml
 threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.4.0.GA/amp/amp.yml
 
 work_dir: "/tmp/{{ocp_project}}"

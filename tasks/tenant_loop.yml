@@ -99,7 +99,6 @@
  
 
 
-
 #  ############                 Create Corresponding API Gateways for each Tenant                   ######### #
 
 # if create_gws_with_each_tenant is set to true, then an API gateway & project will be created for each corresponding tenant in the same OCP cluster where API Manager resides
@@ -154,10 +153,6 @@
 #  ########################################################################################################## #
 
 
-
-
- 
- 
 #  ################################             Delete Tenant            ##################################### #
 #  URI of tenant delete API is:  
 #          /master/api/providers/{id}.xml
@@ -173,8 +168,6 @@
         msg: "done"
   when: create_or_delete_tenants == "delete"
 #  ########################################################################################################## #
-
-
 
 
 - pause:
