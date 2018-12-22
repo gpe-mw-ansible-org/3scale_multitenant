@@ -3,7 +3,7 @@
 :toc2:
 :linkattrs:
 
-= 3scale-multitenant
+= 3scale_multitenant
 
 :numbered:
 
@@ -97,7 +97,7 @@ SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d
 . Install this role locally
 +
 -----
-$ ansible-galaxy install jbride.3scale-multitenant
+$ ansible-galaxy install jbride.3scale_multitenant
 -----
 
 . Create Playbook:
@@ -109,7 +109,7 @@ $ echo "
   gather_facts: False
   vars_files:
   roles:
-    - jbride.3scale-multitenant
+    - jbride.3scale_multitenant
 " > /tmp/3scale_multitenant.yml
 -----
 
