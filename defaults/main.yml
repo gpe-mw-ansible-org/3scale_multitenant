@@ -10,7 +10,7 @@ ocp_user_needs_quota: true
 
 # dedicated API Manager
 quota_requests_cpu: 4
-quota_limits_cpu: 6
+quota_limits_cpu: 12            # Safe to over-provision on CPU; at any given time, API Manager for test purposes really only needs about 4 CPU total
 quota_requests_memory: '16Gi'
 quota_limits_memory: '24Gi'
 

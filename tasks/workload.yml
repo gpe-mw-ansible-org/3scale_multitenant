@@ -22,13 +22,16 @@
   ignore_errors: true
   changed_when: false
 
-- name: "Create project {{ocp_project}}"
-  shell: "oc new-project {{ocp_project}} --display-name={{ocp_project}}"
+- name: "Create project {{ ocp_project }}"
+  shell: "oc adm new-project {{ ocp_project }} --display-name={{ ocp_project }} --admin={{ ocp_amp_admin_id }}"
   when: api_project_result is failed
 
 - name: "Label namespace"
   command: "oc label namespace {{ocp_project}} AAD='{{ocp_amp_admin_id}}'"
   when: api_project_result is failed
+
+- name: Annotate the empty project as requested by user
+  shell: "oc annotate namespace {{ocp_project}} openshift.io/requester={{ocp_amp_admin_id}} --overwrite"
 
 - name: Make sure we go back do default project
   shell: "oc project default"
@@ -85,12 +88,12 @@
         replace: 'cpu: 250m'
     - replace:
         path: "{{ modified_template_path }}"
-        regexp: '(cpu: 1\n)'
-        replace: 'cpu: 300m'
+        regexp: '(cpu: "1")'
+        replace: 'cpu: 500m'
     - replace:
         path: "{{ modified_template_path }}"
         regexp: '(cpu: 2\n)'
-        replace: 'cpu: 300m'
+        replace: 'cpu: 500m'
   when: not is_shared_cluster|bool
 
 
@@ -217,8 +220,6 @@
       - zync
   when: api_project_result is failed
 
-- name: Annotate the empty project as requested by user
-  shell: "oc annotate namespace {{ocp_project}} openshift.io/requester={{ocp_amp_admin_id}} --overwrite"
 ###################################################################
 
 
