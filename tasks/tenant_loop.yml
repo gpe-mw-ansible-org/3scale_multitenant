@@ -113,8 +113,6 @@
         THREESCALE_PORTAL_ENDPOINT: "https://{{tenant_access_token.matches[0].value}}@{{orgName}}-admin.{{ocp_apps_domain}}"
     - set_fact:
         BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{ocp_project}}:3000"
-    - set_fact:
-        REDIS_URL: "redis://system-redis.{{ocp_project}}:6379/1"
 
     - name: "{{tenantAdminId}} Create Staging Gateway"
       shell: |
@@ -122,7 +120,6 @@
                -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
                --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
-               --param REDIS_URL={{REDIS_URL}} \
                --param APP_NAME=stage-apicast \
                --param ROUTE_NAME={{orgName}}-mt-stage-generic \
                --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
@@ -138,7 +135,6 @@
                -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
                --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
-               --param REDIS_URL={{REDIS_URL}} \
                --param APP_NAME=prod-apicast \
                --param ROUTE_NAME={{orgName}}-mt-prod-generic \
                --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
