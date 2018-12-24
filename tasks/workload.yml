@@ -103,8 +103,9 @@
                  -p "MASTER_NAME={{ocp_project}}-master" \
                  -p "MASTER_PASSWORD={{amp_master_passwd}}" \
                  -p "MASTER_ACCESS_TOKEN={{master_access_token}}" \
-                 -p "TENANT_NAME={{ocp_project}}" \
+                 -p "TENANT_NAME={{ default_tenant_name  }}" \
                  -p "ADMIN_PASSWORD={{ amp_admin_passwd }}" \
+                 -p "ADMIN_ACCESS_TOKEN={{ default_tenant_access_token }}" \
                  -p "WILDCARD_DOMAIN={{ ocp_apps_domain }}" \
                  -n "{{ ocp_project }}" \
                  > {{new_app_output}}

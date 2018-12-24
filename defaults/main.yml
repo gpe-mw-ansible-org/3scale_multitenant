@@ -53,9 +53,12 @@ threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-a
 work_dir: "/tmp/{{ocp_project}}"
 modified_template_path: "{{work_dir}}/amp.yml"
 
-amp_admin_passwd: r3dh4t1!
-amp_master_passwd: r3dh4t1!
+amp_admin_passwd: admin
+amp_master_passwd: master
 master_access_token: wtqhhsly
+default_tenant_username: t1
+default_tenant_name: "{{ default_tenant_username }}-{{ ocp_project }}"
+default_tenant_access_token: 3832cnj371woiduh
 
 # Output and log files to be added to invokers home directory
 new_app_output_dir: "{{ lookup('env','HOME') }}/provisioning_output/{{subdomain_base}}"
