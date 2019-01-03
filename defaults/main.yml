@@ -9,16 +9,16 @@ ocp_amp_admin_id: api0
 ocp_user_needs_quota: true
 
 # dedicated API Manager
-quota_requests_cpu: 4
-quota_limits_cpu: 12            # Safe to over-provision on CPU; at any given time, API Manager for test purposes really only needs about 4 CPU total
-quota_requests_memory: '16Gi'
-quota_limits_memory: '24Gi'
+quota_requests_cpu_dedicated: 4
+quota_limits_cpu_dedicated: 12            # Safe to over-provision on CPU; at any given time, API Manager for test purposes really only needs about 4 CPU total
+quota_requests_memory_dedicated: '16Gi'
+quota_limits_memory_dedicated: '24Gi'
 
 # shared API Manager
-# quota_requests_cpu: 20
-# quota_limits_cpu: 30
-# quota_requests_memory: '20Gi'
-# quota_limits_memory: '30Gi'
+quota_requests_cpu_shared: 20
+quota_limits_cpu_shared: 30
+quota_requests_memory_shared: '20Gi'
+quota_limits_memory_shared: '30Gi'
 
 
 quota_configmaps: 15

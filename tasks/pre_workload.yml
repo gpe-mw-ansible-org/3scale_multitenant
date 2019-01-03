@@ -11,14 +11,14 @@
 #     var: groupadd_register
 #     verbosity: 2
 
-- name: Create user Quota - clusterresourcequota
+- name: Create user Quota - Dedicated
   shell: |
         oc create clusterquota clusterquota-"{{ ocp_amp_admin_id }}" \
         --project-annotation-selector=openshift.io/requester="{{ ocp_amp_admin_id }}" \
-        --hard requests.cpu="{{ quota_requests_cpu }}" \
-        --hard limits.cpu="{{ quota_limits_cpu }}"  \
-        --hard requests.memory="{{ quota_requests_memory }}" \
-        --hard limits.memory="{{ quota_limits_memory }}" \
+        --hard requests.cpu="{{ quota_requests_cpu_dedicated }}" \
+        --hard limits.cpu="{{ quota_limits_cpu_dedicated }}"  \
+        --hard requests.memory="{{ quota_requests_memory_dedicated }}" \
+        --hard limits.memory="{{ quota_limits_memory_dedicated }}" \
         --hard configmaps="{{ quota_configmaps }}" \
         --hard pods="{{ quota_pods }}" \
         --hard persistentvolumeclaims="{{ quota_persistentvolumeclaims }}"  \
@@ -26,7 +26,25 @@
         --hard secrets="{{ quota_secrets }}" \
         --hard requests.storage="{{ quota_requests_storage }}"
   ignore_errors: true
-  when: ocp_user_needs_quota|d(False)|bool
+  when: not is_shared_cluster|bool
+
+
+- name: Create user Quota - Shared
+  shell: |
+        oc create clusterquota clusterquota-"{{ ocp_amp_admin_id }}" \
+        --project-annotation-selector=openshift.io/requester="{{ ocp_amp_admin_id }}" \
+        --hard requests.cpu="{{ quota_requests_cpu_shared }}" \
+        --hard limits.cpu="{{ quota_limits_cpu_shared }}"  \
+        --hard requests.memory="{{ quota_requests_memory_shared }}" \
+        --hard limits.memory="{{ quota_limits_memory_shared }}" \
+        --hard configmaps="{{ quota_configmaps }}" \
+        --hard pods="{{ quota_pods }}" \
+        --hard persistentvolumeclaims="{{ quota_persistentvolumeclaims }}"  \
+        --hard services="{{ quota_services }}" \
+        --hard secrets="{{ quota_secrets }}" \
+        --hard requests.storage="{{ quota_requests_storage }}"
+  ignore_errors: true
+  when: is_shared_cluster|bool
 
 - name: pre_workload Tasks Complete
   debug:
