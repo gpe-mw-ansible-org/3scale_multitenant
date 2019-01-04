@@ -79,6 +79,11 @@
 
 - block:
     - name: Reduce RAM resource limit on _redis_ databases
+      command: sed -i 's/32Gi/6Gi/' "{{modified_template_path}}"
+  when: is_shared_cluster|bool
+
+- block:
+    - name: Reduce RAM resource limit on _redis_ databases
       command: sed -i 's/32Gi/2Gi/' "{{modified_template_path}}"
 
     - name: Reduce CPU resource limits and requests across all deployments
