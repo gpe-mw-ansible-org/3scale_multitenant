@@ -23,15 +23,15 @@
   changed_when: false
 
 - name: "Create project {{ ocp_project }}"
-  shell: "oc adm new-project {{ ocp_project }} --display-name={{ ocp_project }} --admin={{ ocp_amp_admin_id }}"
+  shell: "oc adm new-project {{ ocp_project }} --display-name={{ ocp_project }} --admin={{ OCP_AMP_ADMIN_ID }}"
   when: api_project_result is failed
 
 - name: "Label namespace"
-  command: "oc label namespace {{ocp_project}} AAD='{{ocp_amp_admin_id}}'"
+  command: "oc label namespace {{ocp_project}} AAD='{{OCP_AMP_ADMIN_ID}}'"
   when: api_project_result is failed
 
 - name: Annotate the empty project as requested by user
-  shell: "oc annotate namespace {{ocp_project}} openshift.io/requester={{ocp_amp_admin_id}} --overwrite"
+  shell: "oc annotate namespace {{ocp_project}} openshift.io/requester={{OCP_AMP_ADMIN_ID}} --overwrite"
 
 - name: Make sure we go back do default project
   shell: "oc project default"

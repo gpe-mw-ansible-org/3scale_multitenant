@@ -18,8 +18,8 @@
 ##############################################
 
 
-- name: Remove user Quota - oc delete clusterresourcequota  "clusterquota-{{ocp_amp_admin_id}}"
-  shell: oc delete clusterresourcequota clusterquota-{{ocp_amp_admin_id}}
+- name: Remove user Quota - oc delete clusterresourcequota  "clusterquota-{{OCP_AMP_ADMIN_ID}}"
+  shell: oc delete clusterresourcequota clusterquota-{{OCP_AMP_ADMIN_ID}}
   ignore_errors: true
 
 - name: Remove user Project

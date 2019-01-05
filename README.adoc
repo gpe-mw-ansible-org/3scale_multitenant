@@ -9,7 +9,7 @@
 
 == Overview
 
-This workload provisions a single centralized 3scale API Manager in a single OCP namespace called: 3scale-mt-{{ocp_amp_admin_id}}.
+This workload provisions a single centralized 3scale API Manager in a single OCP namespace called: 3scale-mt-{{OCP_AMP_ADMIN_ID}}.
 
 This workload only needs to be executed once per OCP cluster.
 
@@ -70,7 +70,7 @@ SendGrid's zero-cost membership allows for a genereous number of outbound emails
 
 -----
 # Update the following:
-$ echo "export ocp_amp_admin_id=api0" >> ~/.bashrc
+$ echo "export OCP_AMP_ADMIN_ID=api0" >> ~/.bashrc
 
 # Execute the following:
 $ source ~/.bashrc
@@ -115,9 +115,9 @@ $ echo "
 
 === Provision 3scale API manager
 
-The OCP namespace for 3scale multi-tenant app will be owned by the following user: {{ocp_amp_admin_id}}.
+The OCP namespace for 3scale multi-tenant app will be owned by the following user: {{OCP_AMP_ADMIN_ID}}.
 
-{{ocp_amp_admin_id}} will be assigned a clusterquota so as to manage limits and requests assigned to 3scale
+{{OCP_AMP_ADMIN_ID}} will be assigned a clusterquota so as to manage limits and requests assigned to 3scale
 
 . Execute:
 +
@@ -127,7 +127,7 @@ The OCP namespace for 3scale multi-tenant app will be owned by the following use
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=apimanager" \
                     -e"subdomain_base=$SUBDOMAIN_BASE" \
-                    -e"ocp_amp_admin_id=$ocp_amp_admin_id" \
+                    -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
                     -e"smtp_port=$smtp_port" \
                     -e"smtp_authentication=$smtp_authentication" \
                     -e"smtp_host=$smtp_host" \
@@ -149,14 +149,14 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
 -----
 START_TENANT=1
 END_TENANT=1
-CREATE_GWS_WITH_EACH_TENANT=true            #   if set to true, then an API gateway & project will be created for each corresponding tenant in the same OCP cluster where API Manager resides
+CREATE_GWS_WITH_EACH_TENANT=true            #   if true, then an OCP project with API gateways will be created for each corresponding tenant in the same OCP cluster where API Manager resides
 
 
 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=tenant_mgmt" \
                     -e"subdomain_base=$SUBDOMAIN_BASE" \
-                    -e"ocp_amp_admin_id=$ocp_amp_admin_id" \
+                    -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
                     -e"start_tenant=$START_TENANT" \
                     -e"end_tenant=$END_TENANT" \
                     -e"adminEmailUser=$adminEmailUser" \
@@ -193,5 +193,5 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=remove" \
                     -e"subdomain_base=$SUBDOMAIN_BASE" \
                     -e"REMOVE_TENANTS_ONLY=$REMOVE_TENANTS_ONLY" \
-                    -e"ocp_amp_admin_id=$ocp_amp_admin_id"
+                    -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID"
 -----

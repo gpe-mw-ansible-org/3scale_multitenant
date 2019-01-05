@@ -1,10 +1,10 @@
 ---
 
 # - name: Add user to developer group (allowed to create projects)
-#   shell: "oadm groups add-users {{item}} {{ocp_amp_admin_id}}"
+#   shell: "oadm groups add-users {{item}} {{OCP_AMP_ADMIN_ID}}"
 #   register: groupadd_register
 #   with_items: "{{ocp_user_groups}}"
-#   when: ocp_amp_admin_id is defined and ocp_user_groups is defined
+#   when: OCP_AMP_ADMIN_ID is defined and ocp_user_groups is defined
 #
 # - name: test that command worked
 #   debug:
@@ -13,8 +13,8 @@
 
 - name: Create user Quota - Dedicated
   shell: |
-        oc create clusterquota clusterquota-"{{ ocp_amp_admin_id }}" \
-        --project-annotation-selector=openshift.io/requester="{{ ocp_amp_admin_id }}" \
+        oc create clusterquota clusterquota-"{{ OCP_AMP_ADMIN_ID }}" \
+        --project-annotation-selector=openshift.io/requester="{{ OCP_AMP_ADMIN_ID }}" \
         --hard requests.cpu="{{ quota_requests_cpu_dedicated }}" \
         --hard limits.cpu="{{ quota_limits_cpu_dedicated }}"  \
         --hard requests.memory="{{ quota_requests_memory_dedicated }}" \
@@ -31,8 +31,8 @@
 
 - name: Create user Quota - Shared
   shell: |
-        oc create clusterquota clusterquota-"{{ ocp_amp_admin_id }}" \
-        --project-annotation-selector=openshift.io/requester="{{ ocp_amp_admin_id }}" \
+        oc create clusterquota clusterquota-"{{ OCP_AMP_ADMIN_ID }}" \
+        --project-annotation-selector=openshift.io/requester="{{ OCP_AMP_ADMIN_ID }}" \
         --hard requests.cpu="{{ quota_requests_cpu_shared }}" \
         --hard limits.cpu="{{ quota_limits_cpu_shared }}"  \
         --hard requests.memory="{{ quota_requests_memory_shared }}" \
