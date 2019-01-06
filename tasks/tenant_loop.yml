@@ -88,7 +88,7 @@
 
     - name: "{{tenantAdminId}}  8) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
       lineinfile: 
-        line: "{{tenantAdminId}}\t{{ocp_user_passwd}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{tenantAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
+        line: "{{tenantAdminId}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{tenantAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
         path: "{{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
         create: yes
         state: present

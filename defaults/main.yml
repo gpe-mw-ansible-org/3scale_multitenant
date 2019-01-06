@@ -39,7 +39,6 @@ ocp_apps_domain: "apps.{{subdomain_base}}"
 
 lab_name: 3scale-mt
 ocp_project: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
-ocp_user_passwd: r3dh4t1!
 
 is_shared_cluster: false
 
@@ -85,7 +84,7 @@ start_tenant: 1
 end_tenant: 1
 tenant_loop_delay: 2
 tenant_provisioning_results_file: "{{OCP_AMP_ADMIN_ID}}_tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
-tenantAdminPasswd: r3dh4t1!
+tenantAdminPasswd: admin
 
 # AAD rhte-oc-cluster-vms passes this variable.
 # tenant gateway project (if provisioned) should be additionally owned by value of this variable

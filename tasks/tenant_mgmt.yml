@@ -9,7 +9,7 @@
 
 - name: "Initialize {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
   lineinfile: 
-    line: "OCP user id\tOCP user passwd\t3scale admin URL\tAPI admin Id\tAPI admin passwd\tAPI admin access token"
+    line: "OCP user id\t3scale admin URL\tAPI admin Id\tAPI admin passwd\tAPI admin access token"
     path: "{{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
     create: yes
     state: present
