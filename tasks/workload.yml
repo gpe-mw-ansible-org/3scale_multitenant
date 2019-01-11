@@ -37,6 +37,9 @@
   shell: "oc project default"
   when: api_project_result is failed
 
+- name: Enable 3scale Service Discovery
+  shell: "oc adm policy add-cluster-role-to-user view system:serviceaccount:{{ocp_project}}:default"
+
 ################      Multitenent  AMP        #####################
 
 - name: "Make conditional variable based on {{is_shared_cluster}}"
