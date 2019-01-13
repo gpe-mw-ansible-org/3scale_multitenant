@@ -88,7 +88,9 @@ $ adminEmailDomain=<change me>          #   ie:  redhat.com
 
 
 # Copy-n-paste the following:
-SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`                           #   OCP wildcard DNS after "apps";  ie; 2345.openshift.opentlc.com
+SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 2345.openshift.opentlc.com
+                                        #   oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+                                        #   ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
 
 -----
 
