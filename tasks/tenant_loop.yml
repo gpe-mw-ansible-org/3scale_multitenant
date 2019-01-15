@@ -125,6 +125,7 @@
                --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
                --param THREESCALE_DEPLOYMENT_ENV=sandbox \
                --param APICAST_CONFIGURATION_LOADER=lazy \
+               --param APICAST_MANAGEMENT_API=debug \
                -n {{tenantAdminId}}-gw
       register: create_stage_gw
       failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
@@ -139,7 +140,7 @@
                --param ROUTE_NAME={{orgName}}-mt-prod-generic \
                --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
                --param THREESCALE_DEPLOYMENT_ENV=production \
-               --param APICAST_CONFIGURATION_LOADER=lazy \
+               --param APICAST_CONFIGURATION_LOADER=boot \
                -n {{tenantAdminId}}-gw
       register: create_prod_gw
       failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
@@ -159,7 +160,7 @@
 #       In this section, the tenant xml snippet is located and deleted in this xml file
  
 - block:
-    - name: "{{tenantAdminId}}      **********   REALM DELETION  **********"
+    - name: "{{tenantAdminId}}      **********   TENANT DELETION  **********"
       debug:
         msg: "done"
   when: create_or_delete_tenants == "delete"
