@@ -98,7 +98,7 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
 . Install this role locally
 +
 -----
-$ ansible-galaxy install jbride.3scale_multitenant
+$ ansible-galaxy install gpe_mw_ansible.3scale_multitenant
 -----
 
 . Create Playbook:
@@ -110,7 +110,7 @@ $ echo "
   gather_facts: False
   vars_files:
   roles:
-    - jbride.3scale_multitenant
+    - gpe_mw_ansible.3scale_multitenant
 " > /tmp/3scale_multitenant.yml
 -----
 
