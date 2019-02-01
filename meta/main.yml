@@ -39,10 +39,7 @@ galaxy_info:
   - name: Fedora
     versions:
     - 29
-  - name: RHEL
-    versions:
-    - 7
-  - name: CentOS
+  - name: EL
     versions:
     - 7
 
@@ -53,7 +50,7 @@ galaxy_info:
     #
     # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
     #       Maximum 20 tags per role.
-    - APIMgmt
+    - apimgmt
     - 3scale
 
 dependencies: []
