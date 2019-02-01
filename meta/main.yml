@@ -11,10 +11,10 @@ galaxy_info:
   # - BSD (default)
   # - MIT
   # - GPLv2
-  # - GPLv3
   # - Apache
   # - CC-BY
   license: license (GPLv2, CC-BY, etc)
+    - GPLv3
 
   min_ansible_version: 2.4
 
@@ -38,8 +38,11 @@ galaxy_info:
   platforms:
   - name: Fedora
     versions:
-    - all
-  - name: RHEL / CentOS
+    - 29
+  - name: RHEL
+    versions:
+    - 7
+  - name: CentOS
     versions:
     - 7
 
@@ -50,8 +53,8 @@ galaxy_info:
     #
     # NOTE: A tag is limited to a single word comprised of alphanumeric characters.
     #       Maximum 20 tags per role.
-    APIMgmt
-    3scale
+    - APIMgmt
+    - 3scale
 
 dependencies: []
   # List your role dependencies here, one per line. Be sure to remove the '[]' above,
