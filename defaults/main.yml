@@ -82,7 +82,7 @@ tenant_output_dir: "{{new_app_output_dir}}/3scale_tenants_{{OCP_AMP_ADMIN_ID}}"
 tenant_provisioning_log_file: "{{OCP_AMP_ADMIN_ID}}_tenant_provisioning.log"
 start_tenant: 1
 end_tenant: 1
-tenant_loop_delay: 2
+tenant_loop_delay: 4
 tenant_provisioning_results_file: "{{OCP_AMP_ADMIN_ID}}_tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
 tenantAdminPasswd: admin
 

@@ -35,12 +35,23 @@ A few learning objectives might be:
 
 === Prerequisites and assumptions
 
+
+==== OpenShift Client and Cluster
+. The version of 3scale provisioned in this lab (v2.4) is known to run on OpenShift Container Platform v3.11.*.
++
+This version of OpenShift should already be pre-installed before executing this ansible role.
+
 . Using a version of oc utility that corresponds to your target OCP cluster, ensure oc utility is already authenticated as the cluster-admin.
-. This workload requires installation of the lxml python module on target host executing this ansible. ie:
+
+. This ansible role requires installation of the lxml python module on target host executing this ansible. ie:
 +
 -----
 # dnf install python2-lxml
 -----
+
+==== Resource requirements
+
+This ansible role allows for provisioning of 3scale of different sizes based on the value of the following ansible variable: _is_shared_cluster_
 
 . Resource utilization: _is_shared_cluster = true_
 .. The cluster quota for both CPU and RAM is set fairly high by default:
@@ -48,16 +59,29 @@ A few learning objectives might be:
 ... RAM limit:  30 Gi
 .. The cpu and RAM limits defined in the 3scale API Manager template are also set fairly high. 
 .. These default settings are set intentionally high to allow for high throughput
+
 . Resource utilization: _is_shared_cluster = false_
 +
 The resources need to provision 3scale drops down to about 12 Gi RAM and 6 CPU
 
-. smtp provider
-+
+
+==== SMTP Providers
 You'll want to have registered with an smtp provider to enable the 3scale API Manager with the ability to send emails.
-+
-A recommended, zero-cost smtp provider is:   link:https://www.sendgrid.com[sendgrid].
-SendGrid's zero-cost membership allows for a genereous number of outbound emails that meet the needs of a typical enablement training.
+
+In 3scale, smtp settings are configured globally and is leveraged by all API _tenants_.
+When provisioning 3scale, you can specify the following ansible variables:
+  
+* smtp_host
+* smtp_userid
+* smtp_passwd
+* smtp_authentication
+
+
+A few SMTP providers with _Free Plans_ that this ansible role has been tested with are listed below:
+
+. *SocketLabs:* Currently offering a free plan that allows for link:https://www.socketlabs.com/signup/[2000 emails per month]
+. *SendGrid:* Currently offering a free plan that allows for link:https://sendgrid.com/pricing/[100 emails per day]
+
 
 === TO-DOs
 
@@ -77,9 +101,9 @@ $ source ~/.bashrc
 
 
 # SMTP Configurations to enable API Manager to send emails
-$ smtp_host=smtp.sendgrid.net
+$ smtp_host=smtp.socketlabs.com
 $ smtp_port=587
-$ smtp_authentication=plain
+$ smtp_authentication=login
 $ smtp_userid=<change me>
 $ smtp_passwd=<change me>
 $ adminEmailUser=<change me>            #   ie:  jdoe
@@ -136,6 +160,11 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"smtp_passwd=$smtp_passwd" \
                     -e"is_shared_cluster=true"
 -----
+
+. After about 5 minutes, provisioning of the  API Manager should complete.
+. Being that the API Manager is a large application with many different components, the components are broought up in an ordered manner.
++  
+Subsequently, the ansible places itself in a wait loop at each stage of the provisioning process.
 
 
 === Tenant management
