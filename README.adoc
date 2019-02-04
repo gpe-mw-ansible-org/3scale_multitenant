@@ -179,8 +179,11 @@ Subsequently, the ansible places itself in a wait loop at each stage of the prov
 -----
 START_TENANT=1
 END_TENANT=1
-CREATE_GWS_WITH_EACH_TENANT=true            #   if true, then an OCP project with API gateways will be created for each corresponding tenant in the same OCP cluster where API Manager resides
+CREATE_GWS_WITH_EACH_TENANT=true           #   if true, then an OCP project with API gateways will be created for each corresponding tenant in the same OCP cluster where API Manager resides
 
+ocp_user_name_base=ocp                     #   base name of OCP users that will have access to their corresponding API Mgmt related projects.
+                                           #   ie; if OCP user names are:  user1, user2, user3 ....... ,  then the value of this variable should be:  "user"
+                                           #   default value = "ocp"
 
 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
@@ -191,7 +194,8 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"end_tenant=$END_TENANT" \
                     -e"adminEmailUser=$adminEmailUser" \
                     -e"adminEmailDomain=$adminEmailDomain" \
-                    -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT"
+                    -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT" \
+                    -e"ocp_user_name_base=$ocp_user_name_base" 
 -----
 
 . After the tenant provisioning completes, you will see messages similar to the following at the end of the ansible standard out:

@@ -16,7 +16,7 @@
 
 
 - name: "Loop through tenant prep {{start_tenant}} {{end_tenant}}"
-  include: tenant_loop.yml tenantAdminId="user{{item}}"
+  include: tenant_loop.yml tenantAdminId="{{ ocp_user_name_base }}{{ item }}"
   loop: "{{ range(start_tenant|int, end_tenant|int + 1, 1)|list }}"
 
 

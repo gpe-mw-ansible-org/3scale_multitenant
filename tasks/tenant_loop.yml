@@ -104,7 +104,7 @@
 # if create_gws_with_each_tenant is set to true, then an API gateway & project will be created for each corresponding tenant in the same OCP cluster where API Manager resides
 # If create_gws_with_each_tenant is set to false, then the assumption that API gateways will be created outside of the OCP cluster where 3scale API Manager resides
 - block:
-    - name: "{{tenantAdminId}}      1)  **********   TENANT API GW  **********"
+    - name: "{{tenantAdminId}}      9)  **********   TENANT API GW  **********"
       command: "oc adm new-project {{tenantAdminId}}-gw --admin={{tenantAdminId}}  --description={{tenantAdminId}}-gw"
       register: create_proj
       failed_when: create_proj.stderr != ""  and 'already exists' not in create_proj.stderr
@@ -114,7 +114,7 @@
     - set_fact:
         BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{ocp_project}}:3000"
 
-    - name: "{{tenantAdminId}} Create Staging Gateway"
+    - name: "{{tenantAdminId}} 10)        Create Staging Gateway"
       shell: |
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
@@ -130,7 +130,7 @@
       register: create_stage_gw
       failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
 
-    - name: "{{tenantAdminId}} Create Production Gateway"
+    - name: "{{tenantAdminId}} 11)        Create Production Gateway"
       shell: |
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
