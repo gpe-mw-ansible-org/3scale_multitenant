@@ -1,7 +1,15 @@
 ---
 
+# Name of ocp user that is an admin to the project where 3scale resources reside
 - set_fact:
-    orgName: "{{tenantAdminId}}-{{ocp_project}}"
+    ocpAdminId: {{ ocp_user_name_base }}{{ item }}
+
+# Name of 3scale API administrator of the tenant
+- set_fact:
+    tenantAdminId: {{ tenant_admin_user_name_base }}{{ item }}
+
+- set_fact:
+    orgName: "{{ocpAdminId}}-{{ocp_project}}"
 - set_fact:
     output_file: "{{orgName}}-tenant-signup.xml"
 
@@ -9,11 +17,11 @@
 #  ################################             Create Tenant            ##################################### #
 
 - block:
-    - name: "{{tenantAdminId}}      1)  **********   TENANT CREATION  **********"
+    - name: "{{ocpAdminId}}      1)  **********   TENANT CREATION  **********"
       set_fact:
         tenantAdminEmail: "{{adminEmailUser}}%2B{{item}}%40{{adminEmailDomain}}"
     - debug:
-        msg: "{{tenantAdminId}} tenantAdminEmail = {{tenantAdminEmail}}" 
+        msg: "{{ocpAdminId}} tenantAdminEmail = {{tenantAdminEmail}}" 
 
       # NOTE:  As of 3scale 2.2, this operation is not idempotent.
       #        It creates a new tenant given the same parameters.
@@ -32,12 +40,12 @@
         validate_certs: no
       register: create_tenant_response
 
-    - name: "{{tenantAdminId}}     2) copy response to {{tenant_output_dir}}/{{output_file}}"
+    - name: "{{ocpAdminId}}     2) copy response to {{tenant_output_dir}}/{{output_file}}"
       copy:
         content: "{{create_tenant_response.content}}"
         dest: "{{tenant_output_dir}}/{{output_file}}"
 
-    - name: "{{tenantAdminId}}     3) parse xml and extract access token, account_id and user_id"
+    - name: "{{ocpAdminId}}     3) parse xml and extract access token, account_id and user_id"
       xml:
         path: "{{tenant_output_dir}}/{{output_file}}"
         xpath: //access_token/value
@@ -57,7 +65,7 @@
         msg: "{{tenant_access_token.matches[0].value}}  {{account_id.matches[0].id}} {{user_id.matches[0].id}}"
         verbosity: 0
 
-    - name: "{{tenantAdminId}}     4) activate new user"
+    - name: "{{ocpAdminId}}     4) activate new user"
       set_fact:
         activate_user_url: "https://{{ocp_project}}-master.{{ocp_apps_domain}}/admin/api/accounts/{{account_id.matches[0].id}}/users/{{user_id.matches[0].id}}/activate.xml"
     - uri:
@@ -70,10 +78,10 @@
         validate_certs: no
       register: activate_user_response
 
-    - name: "{{tenantAdminId}}     5) Give user view access to 3scale project."
-      command: "oc adm policy add-role-to-user view {{tenantAdminId}} -n {{ocp_project}}"
+    - name: "{{ocpAdminId}}     5) Give user view access to 3scale project."
+      command: "oc adm policy add-role-to-user view {{ocpAdminId}} -n {{ocp_project}}"
 
-    - name: "{{tenantAdminId}}    6) Create corresponding route on 3scale AMP system-provider service"
+    - name: "{{ocpAdminId}}    6) Create corresponding route on 3scale AMP system-provider service"
       command: "oc create route edge {{orgName}}-provider --service=system-provider --hostname={{orgName}}-admin.{{ocp_apps_domain}} -n {{ocp_project}}"
       register: create_sys_provider_route
       failed_when: create_sys_provider_route.stderr != ""  and 'AlreadyExists' not in create_sys_provider_route.stderr
@@ -81,14 +89,14 @@
         msg: "create_sys_provider_route.stderr = {{create_sys_provider_route.stderr}}"
         verbosity: 1
 
-    - name: "{{tenantAdminId}}   7) Create corresponding route on 3scale AMP system-developer service"
+    - name: "{{ocpAdminId}}   7) Create corresponding route on 3scale AMP system-developer service"
       command: "oc create route edge {{orgName}}-developer --service=system-developer --hostname={{orgName}}.{{ocp_apps_domain}} -n {{ocp_project}}"
       register: create_sys_developer_route
       failed_when: create_sys_developer_route.stderr != "" and 'AlreadyExists' not in create_sys_developer_route.stderr
 
-    - name: "{{tenantAdminId}}  8) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
+    - name: "{{ocpAdminId}}  8) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
       lineinfile: 
-        line: "{{tenantAdminId}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{tenantAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
+        line: "{{ocpAdminId}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{ocpAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
         path: "{{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
         create: yes
         state: present
@@ -104,8 +112,8 @@
 # if create_gws_with_each_tenant is set to true, then an API gateway & project will be created for each corresponding tenant in the same OCP cluster where API Manager resides
 # If create_gws_with_each_tenant is set to false, then the assumption that API gateways will be created outside of the OCP cluster where 3scale API Manager resides
 - block:
-    - name: "{{tenantAdminId}}      9)  **********   TENANT API GW  **********"
-      command: "oc adm new-project {{tenantAdminId}}-gw --admin={{tenantAdminId}}  --description={{tenantAdminId}}-gw"
+    - name: "{{ocpAdminId}}      9)  **********   TENANT API GW  **********"
+      command: "oc adm new-project {{ocpAdminId}}-gw --admin={{ocpAdminId}}  --description={{ocpAdminId}}-gw"
       register: create_proj
       failed_when: create_proj.stderr != ""  and 'already exists' not in create_proj.stderr
 
@@ -114,7 +122,7 @@
     - set_fact:
         BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{ocp_project}}:3000"
 
-    - name: "{{tenantAdminId}} 10)        Create Staging Gateway"
+    - name: "{{ocpAdminId}} 10)        Create Staging Gateway"
       shell: |
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
@@ -126,11 +134,11 @@
                --param THREESCALE_DEPLOYMENT_ENV=sandbox \
                --param APICAST_CONFIGURATION_LOADER=lazy \
                --param APICAST_MANAGEMENT_API=debug \
-               -n {{tenantAdminId}}-gw
+               -n {{ocpAdminId}}-gw
       register: create_stage_gw
       failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
 
-    - name: "{{tenantAdminId}} 11)        Create Production Gateway"
+    - name: "{{ocpAdminId}} 11)        Create Production Gateway"
       shell: |
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
@@ -141,7 +149,7 @@
                --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
                --param THREESCALE_DEPLOYMENT_ENV=production \
                --param APICAST_CONFIGURATION_LOADER=boot \
-               -n {{tenantAdminId}}-gw
+               -n {{ocpAdminId}}-gw
       register: create_prod_gw
       failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
 
@@ -160,7 +168,7 @@
 #       In this section, the tenant xml snippet is located and deleted in this xml file
  
 - block:
-    - name: "{{tenantAdminId}}      **********   TENANT DELETION  **********"
+    - name: "{{ocpAdminId}}      **********   TENANT DELETION  **********"
       debug:
         msg: "done"
   when: create_or_delete_tenants == "delete"

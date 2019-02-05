@@ -71,9 +71,12 @@ smtp_passwd: changeme
 
 
 ######   new tenants    #######
-#
+ 
 # base name of OCP users that will have access to their corresponding API Mgmt related projects
 ocp_user_name_base: ocp                             
+
+# base name of 3scale API administrator of the tenant
+tenant_admin_user_name_base: api
 
 create_gws_with_each_tenant: "true"                
 

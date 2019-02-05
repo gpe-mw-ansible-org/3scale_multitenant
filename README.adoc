@@ -82,6 +82,37 @@ A few SMTP providers with _Free Plans_ that this ansible role has been tested wi
 . *SocketLabs:* Currently offering a free plan that allows for link:https://www.socketlabs.com/signup/[2000 emails per month]
 . *SendGrid:* Currently offering a free plan that allows for link:https://sendgrid.com/pricing/[100 emails per day]
 
+=== Project Layout
+
+. Notice the directory layout and files included in this project:
++
+-----
+$ tree
+
+├── defaults
+│   └── main.yml
+├── meta
+│   └── main.yml
+├── README.adoc
+├── tasks
+│   ├── main.yml
+│   ├── pre_workload.yml
+│   ├── remove_workload.yml
+│   ├── tenant_loop.yml
+│   ├── tenant_mgmt.yml
+│   ├── wait_for_deploy.yml
+│   └── workload.yml
+└── templates
+    └── limitrange.yaml
+-----
+
+. Highlights of the most important files are as follows:
+
+.. *defaults/main.yml* : ansible variables and their defaults
+.. *tasks/pre_workload.ymml* : ansible tasks used to set clusterquota 
+.. *tasks/workload.yml* : ansible tasks executed when provisioning 3scale API Manager
+.. *tasks/tenant_mgmt.yml* : ansible tasks executed when provisioning tenants
+
 
 === TO-DOs
 

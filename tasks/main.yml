@@ -23,11 +23,6 @@
       become: "{{ become_override | bool }}"
   when: ACTION == ACTION == "create" or ACTION == "provision" or ACTION == "tenant_mgmt"
 
-- name: Running Post Workload Tasks
-  import_tasks: ./post_workload.yml
-  become: "{{ become_override | bool }}"
-  when: ACTION == "create" or ACTION == "provision" or ACTION == "apimanager"
-
 - name: Running Workload removal Tasks
   block:
     - import_tasks: ./remove_workload.yml
