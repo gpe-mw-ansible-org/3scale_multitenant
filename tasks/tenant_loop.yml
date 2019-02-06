@@ -122,6 +122,9 @@
     - set_fact:
         BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{ocp_project}}:3000"
 
+
+    # https://access.redhat.com/solutions/3394561
+    #   - stage gateway pulls proxy configs with every request to backend service
     - name: "{{ocpAdminId}} 10)        Create Staging Gateway"
       shell: |
         oc new-app \
@@ -133,6 +136,7 @@
                --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
                --param THREESCALE_DEPLOYMENT_ENV=sandbox \
                --param APICAST_CONFIGURATION_LOADER=lazy \
+               --param APICAST_CONFIGURATION_CACHE=0 \
                --param APICAST_MANAGEMENT_API=debug \
                -n {{ocpAdminId}}-gw
       register: create_stage_gw
