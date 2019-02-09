@@ -2,11 +2,11 @@
 
 # Name of ocp user that is an admin to the project where 3scale resources reside
 - set_fact:
-    ocpAdminId: {{ ocp_user_name_base }}{{ item }}
+    ocpAdminId: "{{ ocp_user_name_base }}{{ item }}"
 
 # Name of 3scale API administrator of the tenant
 - set_fact:
-    tenantAdminId: {{ tenant_admin_user_name_base }}{{ item }}
+    tenantAdminId: "{{ tenant_admin_user_name_base }}{{ item }}"
 
 - set_fact:
     orgName: "{{ocpAdminId}}-{{ocp_project}}"
