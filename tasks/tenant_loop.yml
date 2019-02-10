@@ -13,6 +13,12 @@
 - set_fact:
     output_file: "{{orgName}}-tenant-signup.xml"
 
+# Wildcard gateway facts
+- set_fact:
+    GW_WILDCARD_DOMAIN: "wc-apicast.{{ ocpAdminId }}.{{ ocp_apps_domain }}"
+- set_fact:
+    MASTER_API_HOST: "https://{{ master_access_token }}@{{ocp_project}}-master.{{ocp_apps_domain}}"
+
 
 #  ################################             Create Tenant            ##################################### #
 
@@ -156,6 +162,19 @@
                -n {{ocpAdminId}}-gw
       register: create_prod_gw
       failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
+
+    - name: "{{ocpAdminId}} 12)        Create Wildcard Gateway     {{ GW_WILDCARD_DOMAIN }} {{ MASTER_API_HOST }}"
+      shell: |
+        oc new-app \
+               -f {{ tenant_api_wildcard_gw_template_url }} \
+               --param GW_WILDCARD_DOMAIN={{ GW_WILDCARD_DOMAIN }} \
+               --param MASTER_API_HOST={{ MASTER_API_HOST }} \
+               --param LOG_LEVEL=debug \
+               -n {{ ocpAdminId }}-gw
+      register: create_wc_gw
+      failed_when: create_wc_gw.stderr != ""  and 'already exists' not in create_wc_gw.stderr
+
+
 
   when: create_or_delete_tenants == "create" and create_gws_with_each_tenant|bool
 
