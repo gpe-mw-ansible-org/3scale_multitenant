@@ -81,7 +81,7 @@ tenant_admin_user_name_base: api
 create_gws_with_each_tenant: "true"                
 
 tenant_api_gw_template_url: "https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/rhte/3scale-apicast.yml"
-tenant_api_wildcard_gw_template_url: "https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/rhte/3scale-apicast-wildcard.yml"
+tenant_api_wildcard_gw_template_url: "https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/rhte/3scale-wc-router.yml"
 
 adminEmailUser: changeme
 adminEmailDomain: "changeme.com"

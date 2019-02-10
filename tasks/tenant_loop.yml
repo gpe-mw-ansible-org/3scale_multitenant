@@ -15,7 +15,7 @@
 
 # Wildcard gateway facts
 - set_fact:
-    GW_WILDCARD_DOMAIN: "wc-apicast.{{ ocpAdminId }}.{{ ocp_apps_domain }}"
+    GW_WILDCARD_DOMAIN: "wc-router.{{ ocpAdminId }}.{{ ocp_apps_domain }}"
 - set_fact:
     MASTER_API_HOST: "https://{{ master_access_token }}@{{ocp_project}}-master.{{ocp_apps_domain}}"
 
