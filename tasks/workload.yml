@@ -40,6 +40,10 @@
 - name: Enable 3scale Service Discovery
   shell: "oc adm policy add-cluster-role-to-user view system:serviceaccount:{{ocp_project}}:default"
 
+- name: Command to enable the wildcard routes in the OCP cluster for 3scale
+  shell: "oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true -n default"
+  ignore_errors: true
+
 ################      Multitenant  AMP        #####################
 
 - name: "Make conditional variable based on {{is_shared_cluster}}"
