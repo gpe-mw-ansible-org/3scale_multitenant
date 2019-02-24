@@ -1,8 +1,8 @@
 apiVersion: v1
 kind: LimitRange
 metadata:
-  name: "{{ocp_project}}-core-resource-limits"
-  namespace: "{{ocp_project}}"
+  name: "{{api_control_plane_project}}-core-resource-limits"
+  namespace: "{{api_control_plane_project}}"
 spec:
   limits:
   - default:

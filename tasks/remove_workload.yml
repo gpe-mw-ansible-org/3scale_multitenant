@@ -23,7 +23,7 @@
   ignore_errors: true
 
 - name: Remove user Project
-  shell: "oc delete project {{ocp_project}}"
+  shell: "oc delete project {{api_control_plane_project}}"
 
 - name: post_workload Tasks Complete
   debug:

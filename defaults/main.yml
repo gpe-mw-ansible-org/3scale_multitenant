@@ -38,7 +38,7 @@ deploy_status_delay: 20
 ocp_apps_domain: "apps.{{subdomain_base}}"
 
 lab_name: 3scale-mt
-ocp_project: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
+api_control_plane_project: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
 
 is_shared_cluster: false
 
@@ -48,19 +48,19 @@ threescale_template_shared: https://raw.githubusercontent.com/3scale/3scale-amp-
 # Use this for 3scale AMP on dedicated single VM
 threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.4.0.GA/amp/amp.yml
 
-work_dir: "/tmp/{{ocp_project}}"
+work_dir: "/tmp/{{api_control_plane_project}}"
 modified_template_path: "{{work_dir}}/amp.yml"
 
 amp_admin_passwd: admin
 amp_master_passwd: master
 master_access_token: wtqhhsly
 default_tenant_username: t1
-default_tenant_name: "{{ default_tenant_username }}-{{ ocp_project }}"
+default_tenant_name: "{{ default_tenant_username }}-{{ api_control_plane_project }}"
 default_tenant_access_token: 3832cnj371woiduh
 
 # Output and log files to be added to invokers home directory
 new_app_output_dir: "{{ lookup('env','HOME') }}/provisioning_output/{{subdomain_base}}"
-new_app_output: "{{new_app_output_dir}}/{{ocp_project}}-out.log"
+new_app_output: "{{new_app_output_dir}}/{{api_control_plane_project}}-out.log"
 
 # smtp
 smtp_host: "smtp.sendgrid.net"
@@ -93,6 +93,7 @@ end_tenant: 1
 tenant_loop_delay: 4
 tenant_provisioning_results_file: "{{OCP_AMP_ADMIN_ID}}_tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
 tenantAdminPasswd: admin
+tenant_reference_external_api_mgmt_routes: "false"
 
 # AAD rhte-oc-cluster-vms passes this variable.
 # tenant gateway project (if provisioned) should be additionally owned by value of this variable

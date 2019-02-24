@@ -13,7 +13,7 @@
 
 
 - name: "Wait for following deployments to become ready: {{pod_to_wait}}"
-  command: 'oc get rc -o json -n "{{ ocp_project }}"'
+  command: 'oc get rc -o json -n "{{ api_control_plane_project }}"'
   register: rc_state
   changed_when: false
   retries: "{{ deploy_status_retries }}"
