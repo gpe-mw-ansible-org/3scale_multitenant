@@ -26,10 +26,6 @@
   shell: "oc adm new-project {{ api_control_plane_project }} --display-name={{ api_control_plane_project }} --admin={{ OCP_AMP_ADMIN_ID }}"
   when: api_project_result is failed
 
-- name: "Label namespace"
-  command: "oc label namespace {{api_control_plane_project}} AAD='{{OCP_AMP_ADMIN_ID}}'"
-  when: api_project_result is failed
-
 - name: Annotate the empty project as requested by user
   shell: "oc annotate namespace {{api_control_plane_project}} openshift.io/requester={{OCP_AMP_ADMIN_ID}} --overwrite"
 
