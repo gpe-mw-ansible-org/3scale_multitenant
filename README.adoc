@@ -62,7 +62,8 @@ This ansible role allows for provisioning of 3scale of different sizes based on 
 
 . Resource utilization: _is_shared_cluster = false_
 +
-The resources need to provision 3scale drops down to about 12 Gi RAM and 6 CPU
+This is the default.
+The resources needed to provision 3scale drops down to about 12 Gi RAM and 6 CPU
 
 
 ==== SMTP Providers

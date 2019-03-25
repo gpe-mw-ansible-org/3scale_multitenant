@@ -143,7 +143,7 @@
                --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param APP_NAME=stage-apicast \
                --param ROUTE_NAME={{orgName}}-mt-stage-generic \
-               --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
+               --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \
                --param THREESCALE_DEPLOYMENT_ENV=sandbox \
                --param APICAST_CONFIGURATION_LOADER=lazy \
                --param APICAST_CONFIGURATION_CACHE=0 \
@@ -160,7 +160,7 @@
                --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param APP_NAME=prod-apicast \
                --param ROUTE_NAME={{orgName}}-mt-prod-generic \
-               --param WILDCARD_DOMAIN=apps.{{subdomain_base}} \
+               --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \
                --param THREESCALE_DEPLOYMENT_ENV=production \
                --param APICAST_CONFIGURATION_LOADER=boot \
                -n {{ocpAdminId}}-gw

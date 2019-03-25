@@ -35,7 +35,7 @@ build_status_delay: 20
 deploy_status_retries: 15
 deploy_status_delay: 20
 
-ocp_apps_domain: "apps.{{subdomain_base}}"
+ocp_apps_domain: "apps-{{subdomain_base}}"
 
 lab_name: 3scale-mt
 api_control_plane_project: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
@@ -99,7 +99,12 @@ end_tenant: 1
 tenant_loop_delay: 4
 tenant_provisioning_results_file: "{{OCP_AMP_ADMIN_ID}}_tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
 tenantAdminPasswd: admin
-tenant_reference_external_api_mgmt_routes: "false"
+
+# TO_DO:  Must current be set to true
+#   Otherwise, the following exception will be thrown in API gateway:
+#       failed to get list of services: invalid status: 403 (Forbidden) url: http://system-master.3scale-mt-api0:3000/admin/api/services.json, context: ngx.timer
+#       configuration request sent: http://system-master.3scale-mt-api0:3000/admin/api/nginx/spec.json, context: ngx.timer
+tenant_reference_external_api_mgmt_routes: "true"
 
 # AAD rhte-oc-cluster-vms passes this variable.
 # tenant gateway project (if provisioned) should be additionally owned by value of this variable
