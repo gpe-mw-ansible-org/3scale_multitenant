@@ -144,8 +144,10 @@ $ adminEmailDomain=<change me>          #   ie:  redhat.com
 
 
 SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 2345.openshift.opentlc.com
-                                        #   oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
-                                        #   ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+                                        #   examples:
+                                        #       oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+                                        #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
+                                        #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
 
 -----
 
@@ -261,3 +263,19 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"REMOVE_TENANTS_ONLY=$REMOVE_TENANTS_ONLY" \
                     -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID"
 -----
+
+== Stale _WILDCARD_DOMAIN_ State in API Manager
+There may be scenarios where the DNS of your originally provisioned API Manager changes.
+Specifically, the value of the _WILDCARD_DOMAIN_ parameter utilized in the original provisioning of your API Manager is no longer valid.
+
+An example of a scenario where this might occur is in Ravello where the original provisioning of the 3scale API Manager would be captured as a Ravello _Blueprint_.
+At runtime, a Ravello _application_ is instantiated from this Ravello _blueprint_ and the actual runtime DNS of the Ravello _application_ is applied.
+This DNS applied to the runtime _application_ will be different than the DNS originally utilized when creating the _blueprint_.
+
+To correct issues pertaining to this stale state, the following needs to occur :
+
+. Update all routes in the namespace of your API Manager
+. Update the stale URLs found in the _system.accounts_ table in the system-mysql database of the API Manager.
+. Change the value of the _THREESCALE_SUPERDOMAIN_ variable in the configmap:  system-environment:
+
+Examples of how to change the above are found link:https://gist.github.com/jbride/be32113707418cb43d73c9ef28a09b9d[here]
