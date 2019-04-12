@@ -117,7 +117,7 @@ $ tree
 
 === TO-DOs
 
-. Implement tenant deletion
+. Implement link:https://issues.jboss.org/browse/THREESCALE-962?filter=12339104[tenant deletion]
 
 
 == 3scale Deployment
