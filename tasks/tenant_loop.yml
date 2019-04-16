@@ -1,12 +1,18 @@
 ---
 
+# Padded sequence number
+- set_fact: 
+    padded_item: "{{ '%02d'|format(item|int) }}"
+- debug: 
+    msg: "{{ item }} padded to {{ padded_item }}"
+
 # Name of ocp user that is an admin to the project where 3scale resources reside
 - set_fact:
-    ocpAdminId: "{{ ocp_user_name_base }}{{ item }}"
+    ocpAdminId: "{{ ocp_user_name_base }}{{ padded_item }}"
 
 # Name of 3scale API administrator of the tenant
 - set_fact:
-    tenantAdminId: "{{ tenant_admin_user_name_base }}{{ item }}"
+    tenantAdminId: "{{ tenant_admin_user_name_base }}{{ padded_item }}"
 
 - set_fact:
     orgName: "{{ocpAdminId}}-{{API_MANAGER_NS}}"
@@ -25,7 +31,7 @@
 - block:
     - name: "{{ocpAdminId}}      1)  **********   TENANT CREATION  **********"
       set_fact:
-        tenantAdminEmail: "{{adminEmailUser}}%2B{{item}}%40{{adminEmailDomain}}"
+        tenantAdminEmail: "{{adminEmailUser}}%2B{{padded_item}}%40{{adminEmailDomain}}"
     - debug:
         msg: "{{ocpAdminId}} tenantAdminEmail = {{tenantAdminEmail}}" 
 
