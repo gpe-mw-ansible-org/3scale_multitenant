@@ -2,10 +2,10 @@
 
 - name: Tenant provisioning starting
   set_fact:
-    create_tenant_url: "https://{{api_control_plane_project}}-master.{{ocp_apps_domain}}/master/api/providers.xml" 
+    create_tenant_url: "https://{{API_MANAGER_NS}}-master.{{ocp_apps_domain}}/master/api/providers.xml" 
 
 - set_fact:
-    delete_tenant_sub_url: "https://{{api_control_plane_project}}-master.{{ocp_apps_domain}}/master/api/providers/"
+    delete_tenant_sub_url: "https://{{API_MANAGER_NS}}-master.{{ocp_apps_domain}}/master/api/providers/"
 
 - name: "Initialize {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
   lineinfile: 

@@ -17,24 +17,24 @@
   when: default_project_result is failed
 
 - name: check if API Manager deployed
-  shell: "oc get project {{api_control_plane_project}}"
+  shell: "oc get project {{API_MANAGER_NS}}"
   register: api_project_result
   ignore_errors: true
   changed_when: false
 
-- name: "Create project {{ api_control_plane_project }}"
-  shell: "oc adm new-project {{ api_control_plane_project }} --display-name={{ api_control_plane_project }} --admin={{ OCP_AMP_ADMIN_ID }}"
+- name: "Create project {{ API_MANAGER_NS }}"
+  shell: "oc adm new-project {{ API_MANAGER_NS }} --display-name={{ API_MANAGER_NS }} --admin={{ OCP_AMP_ADMIN_ID }}"
   when: api_project_result is failed
 
 - name: Annotate the empty project as requested by user
-  shell: "oc annotate namespace {{api_control_plane_project}} openshift.io/requester={{OCP_AMP_ADMIN_ID}} --overwrite"
+  shell: "oc annotate namespace {{API_MANAGER_NS}} openshift.io/requester={{OCP_AMP_ADMIN_ID}} --overwrite"
 
 - name: Make sure we go back do default project
   shell: "oc project default"
   when: api_project_result is failed
 
 - name: Enable 3scale Service Discovery
-  shell: "oc adm policy add-cluster-role-to-user view system:serviceaccount:{{api_control_plane_project}}:default"
+  shell: "oc adm policy add-cluster-role-to-user view system:serviceaccount:{{API_MANAGER_NS}}:default"
 
 - name: Command to enable the wildcard routes in the OCP cluster for 3scale
   shell: "oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true -n default"
@@ -57,7 +57,7 @@
 
 - name: Delete default limitrange
   shell: |
-    oc delete limitrange {{api_control_plane_project}}-core-resource-limits -n {{api_control_plane_project}}
+    oc delete limitrange {{API_MANAGER_NS}}-core-resource-limits -n {{API_MANAGER_NS}}
   ignore_errors: true
 
 - name: Create a new limitrange
@@ -65,7 +65,7 @@
     src: templates/limitrange.yaml
     dest: "{{work_dir}}/limitrange.yaml"
 - shell: |
-    oc create -f {{work_dir}}/limitrange.yaml -n {{api_control_plane_project}}
+    oc create -f {{work_dir}}/limitrange.yaml -n {{API_MANAGER_NS}}
 
 - name: "Download {{ threescale_template }}"
   get_url:
@@ -108,14 +108,14 @@
 - name: Process the OpenShift Template and create the OpenShift objects for the 3scale API Management Platform
   shell: |
       oc new-app -f "{{ modified_template_path }}" \
-                 -p "MASTER_NAME={{api_control_plane_project}}-master" \
+                 -p "MASTER_NAME={{API_MANAGER_NS}}-master" \
                  -p "MASTER_PASSWORD={{amp_master_passwd}}" \
                  -p "MASTER_ACCESS_TOKEN={{master_access_token}}" \
                  -p "TENANT_NAME={{ default_tenant_name  }}" \
                  -p "ADMIN_PASSWORD={{ amp_admin_passwd }}" \
                  -p "ADMIN_ACCESS_TOKEN={{ default_tenant_access_token }}" \
                  -p "WILDCARD_DOMAIN={{ ocp_apps_domain }}" \
-                 -n "{{ api_control_plane_project }}" \
+                 -n "{{ API_MANAGER_NS }}" \
                  > {{new_app_output}}
   when: api_project_result is failed
 
@@ -128,17 +128,17 @@
 # Otherwise, errors will be thrown during provisioning of tenents if smtp settings are incorrect
 - name: "Modify smtp config map"
   block:
-    - command: oc patch configmap smtp -p "{\"data\":{\"address\":\"{{smtp_host}}\"}}" -n {{api_control_plane_project}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"port\":\"{{smtp_port}}\"}}" -n {{api_control_plane_project}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"authentication\":\"{{smtp_authentication}}\"}}" -n {{api_control_plane_project}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"username\":\"{{smtp_userid}}\"}}" -n {{api_control_plane_project}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"password\":\"{{smtp_passwd}}\"}}" -n {{api_control_plane_project}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"address\":\"{{smtp_host}}\"}}" -n {{API_MANAGER_NS}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"port\":\"{{smtp_port}}\"}}" -n {{API_MANAGER_NS}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"authentication\":\"{{smtp_authentication}}\"}}" -n {{API_MANAGER_NS}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"username\":\"{{smtp_userid}}\"}}" -n {{API_MANAGER_NS}}
+    - command: oc patch configmap smtp -p "{\"data\":{\"password\":\"{{smtp_passwd}}\"}}" -n {{API_MANAGER_NS}}
   when: smtp_userid != "changeme"
 
 
 # #### Storage Tier
 - name: "Resume {{with_items}}"
-  command: oc rollout resume dc/"{{ item }}" -n "{{ api_control_plane_project }}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - backend-redis
     - system-memcache
@@ -160,7 +160,7 @@
 
 # #### Backend Listeners
 - name: "Resume {{with_items}}"
-  command: oc rollout resume dc/"{{ item }}" -n "{{ api_control_plane_project }}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - backend-listener
     - backend-worker
@@ -174,7 +174,7 @@
 
 # #### System Tier
 - name: "Resume {{with_items}}"
-  command: oc rollout resume dc/"{{ item }}" -n "{{ api_control_plane_project }}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - system-app
   when: api_project_result is failed
@@ -186,7 +186,7 @@
 
 # #### Utility Tier
 - name: "Resume {{with_items}}"
-  command: oc rollout resume dc/"{{ item }}" -n "{{ api_control_plane_project }}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - system-sidekiq
     - system-sphinx
@@ -203,7 +203,7 @@
 
 # #### Gateway Tier
 - name: "Resume {{with_items}}"
-  command: oc rollout resume dc/"{{ item }}" -n "{{ api_control_plane_project }}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - apicast-staging
     - apicast-production
@@ -219,7 +219,7 @@
 
 # #### Zync / RHSSO Sync Tier
 - name: "Resume {{with_items}}"
-  command: oc rollout resume dc/"{{ item }}" -n "{{ api_control_plane_project }}"
+  command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - zync
   when: api_project_result is failed

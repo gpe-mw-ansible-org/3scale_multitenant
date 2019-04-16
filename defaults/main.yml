@@ -41,7 +41,7 @@ ocp_apps_domain: "apps.{{ subdomain_base }}"           # All other OCP environme
 
 
 lab_name: 3scale-mt
-api_control_plane_project: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
+API_MANAGER_NS: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
 
 is_shared_cluster: false
 
@@ -51,19 +51,19 @@ threescale_template_shared: https://raw.githubusercontent.com/3scale/3scale-amp-
 # Use this for 3scale AMP on dedicated single VM
 threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.4.0.GA/amp/amp.yml
 
-work_dir: "/tmp/{{api_control_plane_project}}"
+work_dir: "/tmp/{{API_MANAGER_NS}}"
 modified_template_path: "{{work_dir}}/amp.yml"
 
 amp_admin_passwd: admin
 amp_master_passwd: master
 master_access_token: wtqhhsly
 default_tenant_username: t1
-default_tenant_name: "{{ default_tenant_username }}-{{ api_control_plane_project }}"
+default_tenant_name: "{{ default_tenant_username }}-{{ API_MANAGER_NS }}"
 default_tenant_access_token: 3832cnj371woiduh
 
 # Output and log files to be added to invokers home directory
 new_app_output_dir: "{{ lookup('env','HOME') }}/provisioning_output/{{subdomain_base}}"
-new_app_output: "{{new_app_output_dir}}/{{api_control_plane_project}}-out.log"
+new_app_output: "{{new_app_output_dir}}/{{API_MANAGER_NS}}-out.log"
 
 # smtp
 smtp_host: "smtp.sendgrid.net"
@@ -95,12 +95,12 @@ tenant_api_wildcard_gw_template_url: "https://raw.githubusercontent.com/gpe-mw-t
 adminEmailUser: changeme
 adminEmailDomain: "changeme.com"
 
-tenant_output_dir: "{{new_app_output_dir}}/3scale_tenants_{{OCP_AMP_ADMIN_ID}}"
-tenant_provisioning_log_file: "{{OCP_AMP_ADMIN_ID}}_tenant_provisioning.log"
+tenant_output_dir: "{{new_app_output_dir}}/tenants_{{API_MANAGER_NS}}"
+tenant_provisioning_log_file: "tenant_provisioning.log"
 start_tenant: 1
 end_tenant: 1
 tenant_loop_delay: 4
-tenant_provisioning_results_file: "{{OCP_AMP_ADMIN_ID}}_tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
+tenant_provisioning_results_file: "tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
 tenantAdminPasswd: admin
 
 # TO_DO:  Must current be set to true

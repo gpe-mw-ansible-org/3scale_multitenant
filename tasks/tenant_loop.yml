@@ -9,7 +9,7 @@
     tenantAdminId: "{{ tenant_admin_user_name_base }}{{ item }}"
 
 - set_fact:
-    orgName: "{{ocpAdminId}}-{{api_control_plane_project}}"
+    orgName: "{{ocpAdminId}}-{{API_MANAGER_NS}}"
 - set_fact:
     output_file: "{{orgName}}-tenant-signup.xml"
 
@@ -17,7 +17,7 @@
 - set_fact:
     GW_WILDCARD_DOMAIN: "wc-router.{{ ocpAdminId }}.{{ ocp_apps_domain }}"
 - set_fact:
-    MASTER_API_HOST: "https://{{ master_access_token }}@{{api_control_plane_project}}-master.{{ocp_apps_domain}}"
+    MASTER_API_HOST: "https://{{ master_access_token }}@{{API_MANAGER_NS}}-master.{{ocp_apps_domain}}"
 
 
 #  ################################             Create Tenant            ##################################### #
@@ -73,7 +73,7 @@
 
     - name: "{{ocpAdminId}}     4) activate new user"
       set_fact:
-        activate_user_url: "https://{{api_control_plane_project}}-master.{{ocp_apps_domain}}/admin/api/accounts/{{account_id.matches[0].id}}/users/{{user_id.matches[0].id}}/activate.xml"
+        activate_user_url: "https://{{API_MANAGER_NS}}-master.{{ocp_apps_domain}}/admin/api/accounts/{{account_id.matches[0].id}}/users/{{user_id.matches[0].id}}/activate.xml"
     - uri:
         url: "{{activate_user_url}}"
         method: PUT
@@ -85,10 +85,10 @@
       register: activate_user_response
 
     - name: "{{ocpAdminId}}     5) Give user view access to 3scale project."
-      command: "oc adm policy add-role-to-user view {{ocpAdminId}} -n {{api_control_plane_project}}"
+      command: "oc adm policy add-role-to-user view {{ocpAdminId}} -n {{API_MANAGER_NS}}"
 
     - name: "{{ocpAdminId}}    6) Create corresponding route on 3scale AMP system-provider service"
-      command: "oc create route edge {{orgName}}-provider --service=system-provider --hostname={{orgName}}-admin.{{ocp_apps_domain}} -n {{api_control_plane_project}}"
+      command: "oc create route edge {{orgName}}-provider --service=system-provider --hostname={{orgName}}-admin.{{ocp_apps_domain}} -n {{API_MANAGER_NS}}"
       register: create_sys_provider_route
       failed_when: create_sys_provider_route.stderr != ""  and 'AlreadyExists' not in create_sys_provider_route.stderr
     - debug:
@@ -96,7 +96,7 @@
         verbosity: 1
 
     - name: "{{ocpAdminId}}   7) Create corresponding route on 3scale AMP system-developer service"
-      command: "oc create route edge {{orgName}}-developer --service=system-developer --hostname={{orgName}}.{{ocp_apps_domain}} -n {{api_control_plane_project}}"
+      command: "oc create route edge {{orgName}}-developer --service=system-developer --hostname={{orgName}}.{{ocp_apps_domain}} -n {{API_MANAGER_NS}}"
       register: create_sys_developer_route
       failed_when: create_sys_developer_route.stderr != "" and 'AlreadyExists' not in create_sys_developer_route.stderr
 
@@ -127,10 +127,10 @@
         THREESCALE_PORTAL_ENDPOINT: "https://{{tenant_access_token.matches[0].value}}@{{orgName}}-admin.{{ocp_apps_domain}}"
       when: tenant_reference_external_api_mgmt_routes|bool 
     - set_fact:
-        THREESCALE_PORTAL_ENDPOINT: "http://{{tenant_access_token.matches[0].value}}@system-master.{{ api_control_plane_project }}:3000"
+        THREESCALE_PORTAL_ENDPOINT: "http://{{tenant_access_token.matches[0].value}}@system-master.{{ API_MANAGER_NS }}:3000"
       when: not tenant_reference_external_api_mgmt_routes|bool 
     - set_fact:
-        BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{api_control_plane_project}}:3000"
+        BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{API_MANAGER_NS}}:3000"
 
 
     # https://access.redhat.com/solutions/3394561

@@ -9,7 +9,7 @@
 
 == Overview
 
-This workload provisions a single centralized 3scale API Manager in a single OCP namespace called: 3scale-mt-{{OCP_AMP_ADMIN_ID}}.
+This workload provisions a single centralized 3scale API Manager in a single OCP namespace.
 
 This workload only needs to be executed once per OCP cluster.
 
@@ -126,7 +126,12 @@ $ tree
 
 -----
 # Update the following:
-$ echo "export OCP_AMP_ADMIN_ID=api0" >> ~/.bashrc
+$ echo "export OCP_AMP_ADMIN_ID=api0" >> ~/.bashrc  # OCP user that owns OCP namespace where mult-tenant 3scale resides
+                                                    # A cluster quota is assigned to this user
+                                                    # NOTE: this OCP user doesn't necessarily need to exist
+
+
+$ echo "export API_MANAGER_NS=3scale-mt-\$OCP_AMP_ADMIN_ID" >> ~/.bashrc      # OCP namespace where 3scale API Manager resides
 
 # Execute the following:
 $ source ~/.bashrc
@@ -148,6 +153,7 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
                                         #       oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
                                         #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
                                         #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+
 
 -----
 
@@ -187,6 +193,7 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=apimanager" \
                     -e"subdomain_base=$SUBDOMAIN_BASE" \
                     -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
+                    -e"API_MANAGER_NS=$API_MANAGER_NS" \
                     -e"smtp_port=$smtp_port" \
                     -e"smtp_authentication=$smtp_authentication" \
                     -e"smtp_host=$smtp_host" \
@@ -223,7 +230,7 @@ ocp_user_name_base=ocp                     #   base name of OCP users that will 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=tenant_mgmt" \
                     -e"subdomain_base=$SUBDOMAIN_BASE" \
-                    -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
+                    -e"API_MANAGER_NS=$API_MANAGER_NS" \
                     -e"start_tenant=$START_TENANT" \
                     -e"end_tenant=$END_TENANT" \
                     -e"adminEmailUser=$adminEmailUser" \
@@ -237,9 +244,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
 -----
 ok: [localhost] => {
     "msg": [
-        "tenant_output_dir:  /home/jbride/provisioning_output/3295.openshift.opentlc.com/3scale_tenants_api0",
-        "tenant_provisioning_log_file = /home/jbride/provisioning_output/3295.openshift.opentlc.com/3scale_tenants_api0/api0_tenant_provisioning.log",
-        "tenant_provisioning_results_file = /home/jbride/provisioning_output/3295.openshift.opentlc.com/3scale_tenants_api0/api0_tenant_info_file_1_2.txt",
+        "tenant_output_dir:  /home/jbride/provisioning_output/3295.openshift.opentlc.com/tenants_3scale-mt-api0",
+        "tenant_provisioning_log_file = /home/jbride/provisioning_output/3295.openshift.opentlc.com/tenants_3scale-mt-api0/tenant_provisioning.log",
+        "tenant_provisioning_results_file = /home/jbride/provisioning_output/3295.openshift.opentlc.com/tenants_3scale-mt-api0/tenant_info_file_1_2.txt",
         "start and end tenants = 1  2",
         "create API Gateways for each tenant = true"
     ]
@@ -259,9 +266,10 @@ This is a tab delimited file that can be imported into Google Spreadsheets and m
 REMOVE_TENANTS_ONLY=true
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=remove" \
+                    -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
+                    -e"API_MANAGER_NS=$API_MANAGER_NS" \
                     -e"subdomain_base=$SUBDOMAIN_BASE" \
-                    -e"REMOVE_TENANTS_ONLY=$REMOVE_TENANTS_ONLY" \
-                    -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID"
+                    -e"REMOVE_TENANTS_ONLY=$REMOVE_TENANTS_ONLY"
 -----
 
 == Stale _WILDCARD_DOMAIN_ State in API Manager
