@@ -259,6 +259,14 @@ Feel free to review the files mentioned in those output messages.
 +
 This is a tab delimited file that can be imported into Google Spreadsheets and made accessible to students.
 
+==== Tenant User credentials
+
+Each tenant is provisioned with a user that has admin privleges to that tenant.
+
+The useId and password are generated using the following ansible variables found in defaults/main.yml:
+
+. *Tenant admin userId:*  {{ tenant_admin_user_name_base }}  (ie:  api1, api2, api3 .... )
+. *Tenant admin password:* {{ tenantAdminPasswd }}
 
 === Delete 3scale API manager
 
