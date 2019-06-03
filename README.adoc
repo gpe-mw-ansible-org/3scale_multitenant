@@ -223,8 +223,12 @@ END_TENANT=1
 CREATE_GWS_WITH_EACH_TENANT=true           #   if true, then an OCP project with API gateways will be created for each corresponding tenant in the same OCP cluster where API Manager resides
 
 ocp_user_name_base=ocp                     #   base name of OCP users that will have access to their corresponding API Mgmt related projects.
-                                           #   ie; if OCP user names are:  user1, user2, user3 ....... ,  then the value of this variable should be:  "user"
+                                           #   ie; if OCP user names are:  user01, user02, user03 ....... ,  then the value of this variable should be:  "user"
                                            #   default value = "ocp"
+
+tenant_admin_user_name_base=api            #   base name of API users that will be admins of their API tenants (and admins of thier own API gateways)
+                                           #   ie; if desired API user names are:  api01, api02, api03 ....... ,  then the value of this variable should be:  "api"
+                                           #   default value = "api"
 
 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
@@ -236,7 +240,8 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"adminEmailUser=$adminEmailUser" \
                     -e"adminEmailDomain=$adminEmailDomain" \
                     -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT" \
-                    -e"ocp_user_name_base=$ocp_user_name_base" 
+                    -e"ocp_user_name_base=$ocp_user_name_base" \ 
+                    -e"tenant_admin_user_name_base=$tenant_admin_user_name_base" \ 
 -----
 
 . After the tenant provisioning completes, you will see messages similar to the following at the end of the ansible standard out:
@@ -265,7 +270,7 @@ Each tenant is provisioned with a user that has admin privleges to that tenant.
 
 The useId and password are generated using the following ansible variables found in defaults/main.yml:
 
-. *Tenant admin userId:*  {{ tenant_admin_user_name_base }}  (ie:  api1, api2, api3 .... )
+. *Tenant admin userId:*  {{ tenant_admin_user_name_base }}  (ie:  api01, api02, api03 ...., api10 )
 . *Tenant admin password:* {{ tenantAdminPasswd }}
 
 === Delete 3scale API manager
