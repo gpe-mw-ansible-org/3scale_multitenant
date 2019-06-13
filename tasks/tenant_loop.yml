@@ -1,23 +1,27 @@
 ---
 
-# Padded sequence number
-- set_fact: 
-    padded_item: "{{ '%02d'|format(item|int) }}"
-- debug: 
-    msg: "{{ item }} padded to {{ padded_item }}"
+- block:
+  # Padded sequence number
+  - set_fact: 
+      padded_item: "{{ '%02d'|format(item|int) }}"
+  - debug: 
+      msg: "{{ item }} padded to {{ padded_item }}"
 
-# Name of ocp user that is an admin to the project where 3scale resources reside
-- set_fact:
-    ocpAdminId: "{{ ocp_user_name_base }}{{ padded_item }}"
+  # Name of ocp user that is an admin to the project where 3scale resources reside
+  - set_fact:
+      ocpAdminId: "{{ ocp_user_name_base }}{{ padded_item }}"
+  
+  # Name of 3scale API administrator of the tenant
+  - set_fact:
+      tenantAdminId: "{{ tenant_admin_user_name_base }}{{ padded_item }}"
+  
+  - set_fact:
+      orgName: "{{ocpAdminId}}-{{API_MANAGER_NS}}"
 
-# Name of 3scale API administrator of the tenant
-- set_fact:
-    tenantAdminId: "{{ tenant_admin_user_name_base }}{{ padded_item }}"
-
-- set_fact:
-    orgName: "{{ocpAdminId}}-{{API_MANAGER_NS}}"
-- set_fact:
-    output_file: "{{orgName}}-tenant-signup.xml"
+  - set_fact:
+      gw_project_name: "{{ ocpAdminId }}-gw"
+  
+  when: item > 0
 
 # Wildcard gateway facts
 - set_fact:
@@ -25,6 +29,8 @@
 - set_fact:
     MASTER_API_HOST: "https://{{ master_access_token }}@{{API_MANAGER_NS}}-master.{{ocp_apps_domain}}"
 
+- set_fact:
+    output_file: "{{orgName}}-tenant-signup.xml"
 
 #  ################################             Create Tenant            ##################################### #
 
@@ -125,7 +131,7 @@
 # If create_gws_with_each_tenant is set to false, then the assumption that API gateways will be created outside of the OCP cluster where 3scale API Manager resides
 - block:
     - name: "{{ocpAdminId}}      9)  **********   TENANT API GW  **********"
-      command: "oc adm new-project {{ocpAdminId}}-gw --admin={{ocpAdminId}}  --description={{ocpAdminId}}-gw"
+      command: "oc adm new-project {{ gw_project_name }} --admin={{ ocpAdminId }}  --description={{ gw_project_name }}"
       register: create_proj
       failed_when: create_proj.stderr != ""  and 'already exists' not in create_proj.stderr
 
@@ -154,7 +160,7 @@
                --param APICAST_CONFIGURATION_LOADER=lazy \
                --param APICAST_CONFIGURATION_CACHE=0 \
                --param APICAST_MANAGEMENT_API=debug \
-               -n {{ocpAdminId}}-gw
+               -n {{ gw_project_name }}
       register: create_stage_gw
       failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
 
@@ -169,7 +175,7 @@
                --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \
                --param THREESCALE_DEPLOYMENT_ENV=production \
                --param APICAST_CONFIGURATION_LOADER=boot \
-               -n {{ocpAdminId}}-gw
+               -n {{ gw_project_name }}
       register: create_prod_gw
       failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
 
@@ -180,7 +186,7 @@
                --param GW_WILDCARD_DOMAIN={{ GW_WILDCARD_DOMAIN }} \
                --param MASTER_API_HOST={{ MASTER_API_HOST }} \
                --param LOG_LEVEL=debug \
-               -n {{ ocpAdminId }}-gw
+               -n {{ gw_project_name }}
       register: create_wc_gw
       failed_when: create_wc_gw.stderr != ""  and 'already exists' not in create_wc_gw.stderr
 
