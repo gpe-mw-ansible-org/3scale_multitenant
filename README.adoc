@@ -117,7 +117,9 @@ $ tree
 
 === TO-DOs
 
+. Paused DCs are redundant with link:https://github.com/3scale/3scale-amp-openshift-templates/blob/master/amp/amp.yml#L577-L594[initContainers in template]
 . Implement link:https://issues.jboss.org/browse/THREESCALE-962?filter=12339104[tenant deletion]
+. Upgrade to use of operator
 
 
 == 3scale Deployment
