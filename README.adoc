@@ -167,7 +167,7 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
 . Install this role locally
 +
 -----
-$ ansible-galaxy install gpe_mw_ansible.3scale_multitenant --force
+$ ansible-galaxy install gpe_mw_ansible.3scale_multitenant --force -p $HOME/.ansible/roles
 -----
 
 . Create Playbook:
