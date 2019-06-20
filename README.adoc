@@ -237,6 +237,11 @@ tenant_admin_user_name_base=api            #   base name of API users that will 
                                            #   ie; if desired API user names are:  api01, api02, api03 ....... ,  then the value of this variable should be:  "api"
                                            #   default value = "api"
 
+use_padded_tenant_numbers=true             #   if creating sequential generic tenants, specify whether the tenant names should include a padded numer or not
+                                           #   ie;  ocp01, ocp02 ... ocp10    or ocp1, ocp2 ... ocp10
+                                           #   default value is true
+                                           #   default value corresponds to the defualt use of padded numbers in: https://github.com/gpe-mw-ansible-org/rh-sso-multi-realm
+
 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=tenant_mgmt" \
@@ -248,7 +253,8 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"adminEmailDomain=$adminEmailDomain" \
                     -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT" \
                     -e"ocp_user_name_base=$ocp_user_name_base" \ 
-                    -e"tenant_admin_user_name_base=$tenant_admin_user_name_base"
+                    -e"tenant_admin_user_name_base=$tenant_admin_user_name_base" \
+                    -e"use_padded_tenant_numbers=$use_padded_tenant_numbers"
 -----
 
 . After the tenant provisioning completes, you will see messages similar to the following at the end of the ansible standard out:

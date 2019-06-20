@@ -1,26 +1,33 @@
 ---
 
+# The following is only appropriate when create generic tenants whose names are sequential
+# The following is skipped when creating a "named" tenant, ie; openbanking-dev  
 - block:
+  - set_fact:
+      counter: "{{ item }}"   
+
   # Padded sequence number
-  - set_fact: 
-      padded_item: "{{ '%02d'|format(item|int) }}"
-  - debug: 
-      msg: "{{ item }} padded to {{ padded_item }}"
+  - block:
+    - set_fact: 
+        counter: "{{ '%02d'|format(item|int) }}"
+    - debug: 
+        msg: "{{ item }} padded to {{ counter }}"
+  - when: use_padded_tenant_numbers|bool
 
   # Name of ocp user that is an admin to the project where 3scale resources reside
   - set_fact:
-      ocpAdminId: "{{ ocp_user_name_base }}{{ padded_item }}"
+      ocpAdminId: "{{ ocp_user_name_base }}{{ counter }}"
   
   # Name of 3scale API administrator of the tenant
   - set_fact:
-      tenantAdminId: "{{ tenant_admin_user_name_base }}{{ padded_item }}"
+      tenantAdminId: "{{ tenant_admin_user_name_base }}{{ counter }}"
   
   - set_fact:
       orgName: "{{ocpAdminId}}-{{API_MANAGER_NS}}"
 
   - set_fact:
       gw_project_name: "{{ ocpAdminId }}-gw"
-  
+
   when: item > 0
 
 # Wildcard gateway facts
@@ -37,7 +44,7 @@
 - block:
     - name: "{{ocpAdminId}}      1)  **********   TENANT CREATION  **********"
       set_fact:
-        tenantAdminEmail: "{{adminEmailUser}}%2B{{padded_item}}%40{{adminEmailDomain}}"
+        tenantAdminEmail: "{{adminEmailUser}}%2B{{ counter }}%40{{adminEmailDomain}}"
     - debug:
         msg: "{{ocpAdminId}} tenantAdminEmail = {{tenantAdminEmail}}" 
 
