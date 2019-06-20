@@ -12,7 +12,7 @@
         counter: "{{ '%02d'|format(item|int) }}"
     - debug: 
         msg: "{{ item }} padded to {{ counter }}"
-  - when: use_padded_tenant_numbers|bool
+    when: use_padded_tenant_numbers|bool
 
   # Name of ocp user that is an admin to the project where 3scale resources reside
   - set_fact:
