@@ -36,8 +36,8 @@ deploy_status_retries: 15
 deploy_status_delay: 20
 
 # Wildard DNS of OCP cluster environment
-ocp_apps_domain: "apps-{{ subdomain_base }}"          # Ravello environment
-#ocp_apps_domain: "apps.{{ subdomain_base }}"           # All other OCP environments
+#ocp_apps_domain: "apps-{{ subdomain_base }}"          # Ravello environment
+ocp_apps_domain: "apps.{{ subdomain_base }}"           # All other OCP environments
 
 
 lab_name: 3scale-mt

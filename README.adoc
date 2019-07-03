@@ -252,7 +252,7 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"adminEmailUser=$adminEmailUser" \
                     -e"adminEmailDomain=$adminEmailDomain" \
                     -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT" \
-                    -e"ocp_user_name_base=$ocp_user_name_base" \ 
+                    -e"ocp_user_name_base=$ocp_user_name_base" \
                     -e"tenant_admin_user_name_base=$tenant_admin_user_name_base" \
                     -e"use_padded_tenant_numbers=$use_padded_tenant_numbers"
 -----
