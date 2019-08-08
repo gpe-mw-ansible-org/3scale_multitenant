@@ -49,6 +49,18 @@ This version of OpenShift should already be pre-installed before executing this 
 # dnf install python2-lxml
 -----
 
+. It is highly recommended that you SSH into the bastion node of your OCP cluster. The following tasks are best executed on the bastion node.
++
+-----
+# ssh -i ~/.ssh/your_private_key_name <OPENTLC_ID>@bastion.<GUID>.openshift.opentlc.com
+-----
+
+. Ensure that you are explicitly logged onto the master API of the OCP cluster, from your bastion node.
++
+-----
+# oc login master.<GUID>.openshift.opentlc.com
+-----
+
 ==== Resource requirements
 
 This ansible role allows for provisioning of 3scale of different sizes based on the value of the following ansible variable: _is_shared_cluster_
@@ -57,7 +69,7 @@ This ansible role allows for provisioning of 3scale of different sizes based on 
 .. The cluster quota for both CPU and RAM is set fairly high by default:
 ... CPU limit:  30 cores
 ... RAM limit:  30 Gi
-.. The cpu and RAM limits defined in the 3scale API Manager template are also set fairly high. 
+.. The cpu and RAM limits defined in the 3scale API Manager template are also set fairly high.
 .. These default settings are set intentionally high to allow for high throughput
 
 . Resource utilization: _is_shared_cluster = false_
@@ -71,7 +83,7 @@ You'll want to have registered with an smtp provider to enable the 3scale API Ma
 
 In 3scale, smtp settings are configured globally and is leveraged by all API _tenants_.
 When provisioning 3scale, you can specify the following ansible variables:
-  
+
 * smtp_host
 * smtp_userid
 * smtp_passwd
@@ -113,7 +125,7 @@ $ tree
 . Highlights of the most important files are as follows:
 
 .. *defaults/main.yml* : ansible variables and their defaults
-.. *tasks/pre_workload.ymml* : ansible tasks used to set clusterquota 
+.. *tasks/pre_workload.ymml* : ansible tasks used to set clusterquota
 .. *tasks/workload.yml* : ansible tasks executed when provisioning 3scale API Manager
 .. *tasks/tenant_mgmt.yml* : ansible tasks executed when provisioning tenants
 
@@ -209,7 +221,7 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
 
 . After about 5 minutes, provisioning of the  API Manager should complete.
 . Being that the API Manager is a large application with many different components, the components are broought up in an ordered manner.
-+  
++
 Subsequently, the ansible places itself in a wait loop at each stage of the provisioning process.
 
 
