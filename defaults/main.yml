@@ -104,7 +104,7 @@ tenant_output_dir: "{{new_app_output_dir}}/tenants_{{API_MANAGER_NS}}"
 tenant_provisioning_log_file: "tenant_provisioning.log"
 start_tenant: 1
 end_tenant: 1
-tenant_loop_delay: 10
+tenant_loop_delay: 15
 tenant_provisioning_results_file: "tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
 
 # TO_DO:  Must current be set to true
