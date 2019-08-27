@@ -36,11 +36,12 @@
 - name: Enable 3scale Service Discovery
   shell: "oc adm policy add-cluster-role-to-user view system:serviceaccount:{{API_MANAGER_NS}}:default"
 
+# No longer relevant with 3scale 2.6;  Zync component now handles wildcard routes
 - name: Command to enable the wildcard routes in the OCP cluster for 3scale
   shell: "oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true -n default"
   ignore_errors: true
 
-################      Multitenant  AMP        #####################
+################      Multitenant  API Manager        #####################
 
 - name: "Make conditional variable based on {{is_shared_cluster}}"
   set_fact:
@@ -65,12 +66,20 @@
     src: templates/limitrange.yaml
     dest: "{{work_dir}}/limitrange.yaml"
 - shell: |
-    oc create -f {{work_dir}}/limitrange.yaml -n {{API_MANAGER_NS}}
+    oc create -f {{work_dir}}/limitrange.yaml -n {{ API_MANAGER_NS }}
+
+- name: "Create threescale-registry-auth image pull secret in {{ API_MANAGER_NS }}"
+  shell: |
+    oc create secret docker-registry threescale-registry-auth \
+        --docker-server=registry.redhat.io \
+        --docker-username='{{ rht_service_token_user }}' \
+        --docker-password={{ rht_service_token_password }} \
+        -n  {{ API_MANAGER_NS }}
 
 - name: "Download {{ threescale_template }}"
   get_url:
     url: "{{ threescale_template }}"
-    dest: "{{modified_template_path}}"
+    dest: "{{ modified_template_path }}"
     force: yes
   when: api_project_result is failed
 

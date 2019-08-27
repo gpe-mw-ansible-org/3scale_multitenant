@@ -151,6 +151,14 @@
     - set_fact:
         BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{API_MANAGER_NS}}:3000"
 
+    - name: "Create threescale-registry-auth image pull secret in {{ API_MANAGER_NS }}"
+      shell: |
+        oc create secret docker-registry threescale-registry-auth \
+            --docker-server=registry.redhat.io \
+            --docker-username='{{ rht_service_token_user }}' \
+            --docker-password={{ rht_service_token_password }} \
+            -n  {{ gw_project_name }}
+
 
     # https://access.redhat.com/solutions/3394561
     #   - stage gateway pulls proxy configs with every request to backend service

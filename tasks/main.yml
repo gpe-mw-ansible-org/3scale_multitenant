@@ -5,6 +5,11 @@
     state: directory
     mode: 0755
 
+- name: Ensure RHT Registry Service Account credentials exist
+  debug:
+    msg: "rht_service_token_user = {{ rht_service_token_user }}"
+  failed_when: rht_service_token_user is not defined 
+
 - name: Running Pre Workload Tasks
   import_tasks: ./pre_workload.yml
   become: "{{ become_override | bool }}"

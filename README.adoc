@@ -159,6 +159,9 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
                                         #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
                                         #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
 
+$ rht_service_token_user=<change me>    #   RHT Registry Service Account name as per:   https://access.redhat.com/terms-based-registry
+$ rht_service_token_password=<changeme> #   RHT Registry Service Account passwd as per: https://access.redhat.com/terms-based-registry/
+
 
 -----
 
@@ -204,7 +207,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"smtp_host=$smtp_host" \
                     -e"smtp_userid=$smtp_userid" \
                     -e"smtp_passwd=$smtp_passwd" \
-                    -e"is_shared_cluster=true"
+                    -e"is_shared_cluster=true" \
+                    -e"rht_service_token_user=$rht_service_token_user" \
+                    -e"rht_service_token_password=$rht_service_token_password"
 -----
 
 . After about 5 minutes, provisioning of the  API Manager should complete.
