@@ -106,20 +106,7 @@
     - name: "{{ocpAdminId}}     5) Give user view access to 3scale project."
       command: "oc adm policy add-role-to-user view {{ocpAdminId}} -n {{API_MANAGER_NS}}"
 
-    - name: "{{ocpAdminId}}    6) Create corresponding route on 3scale AMP system-provider service"
-      command: "oc create route edge {{orgName}}-provider --service=system-provider --hostname={{orgName}}-admin.{{ocp_apps_domain}} -n {{API_MANAGER_NS}}"
-      register: create_sys_provider_route
-      failed_when: create_sys_provider_route.stderr != ""  and 'AlreadyExists' not in create_sys_provider_route.stderr
-    - debug:
-        msg: "create_sys_provider_route.stderr = {{create_sys_provider_route.stderr}}"
-        verbosity: 1
-
-    - name: "{{ocpAdminId}}   7) Create corresponding route on 3scale AMP system-developer service"
-      command: "oc create route edge {{orgName}}-developer --service=system-developer --hostname={{orgName}}.{{ocp_apps_domain}} -n {{API_MANAGER_NS}}"
-      register: create_sys_developer_route
-      failed_when: create_sys_developer_route.stderr != "" and 'AlreadyExists' not in create_sys_developer_route.stderr
-
-    - name: "{{ocpAdminId}}  8) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
+    - name: "{{ocpAdminId}}  6) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
       lineinfile: 
         line: "{{ocpAdminId}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{tenantAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
         path: "{{tenant_output_dir}}/{{tenant_provisioning_results_file}}"

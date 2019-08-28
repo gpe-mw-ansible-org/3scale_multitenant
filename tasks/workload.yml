@@ -216,13 +216,13 @@
   with_items:
     - apicast-staging
     - apicast-production
-  when: not RESUME_CONTROL_PLANE_GWS|bool and api_project_result is failed
+  when: RESUME_CONTROL_PLANE_GWS and api_project_result is failed
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - apicast-staging
       - apicast-production
-  when: not RESUME_CONTROL_PLANE_GWS|bool and api_project_result is failed
+  when: RESUME_CONTROL_PLANE_GWS and api_project_result is failed
 
 # #### Zync / RHSSO Sync Tier
 - name: "Resume {{with_items}}"
