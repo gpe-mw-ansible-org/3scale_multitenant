@@ -148,8 +148,6 @@
     - set_fact:
         THREESCALE_PORTAL_ENDPOINT: "http://{{tenant_access_token.matches[0].value}}@system-master.{{ API_MANAGER_NS }}:3000"
       when: not tenant_reference_external_api_mgmt_routes|bool 
-    - set_fact:
-        BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{API_MANAGER_NS}}:3000"
 
     - name: "Create threescale-registry-auth image pull secret in {{ API_MANAGER_NS }}"
       shell: |
@@ -167,7 +165,6 @@
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
-               --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param APP_NAME=stage-apicast \
                --param ROUTE_NAME={{orgName}}-mt-stage-generic \
                --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \
@@ -184,7 +181,6 @@
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
-               --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param APP_NAME=prod-apicast \
                --param ROUTE_NAME={{orgName}}-mt-prod-generic \
                --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \

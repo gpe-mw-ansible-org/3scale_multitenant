@@ -8,6 +8,8 @@ OCP_AMP_ADMIN_ID: api0
 
 ocp_user_needs_quota: true
 
+RESUME_CONTROL_PLANE_GWS: false
+
 # dedicated API Manager
 quota_requests_cpu_dedicated: 4
 quota_limits_cpu_dedicated: 12            # Safe to over-provision on CPU; at any given time, API Manager for test purposes really only needs about 4 CPU total

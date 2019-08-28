@@ -216,26 +216,26 @@
   with_items:
     - apicast-staging
     - apicast-production
-    - apicast-wildcard-router
-  when: api_project_result is failed
+  when: not RESUME_CONTROL_PLANE_GWS|bool and api_project_result is failed
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - apicast-staging
       - apicast-production
-      - apicast-wildcard-router
-  when: api_project_result is failed
+  when: not RESUME_CONTROL_PLANE_GWS|bool and api_project_result is failed
 
 # #### Zync / RHSSO Sync Tier
 - name: "Resume {{with_items}}"
   command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - zync
+    - zync-que
   when: api_project_result is failed
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - zync
+      - zync-que
   when: api_project_result is failed
 
 ###################################################################

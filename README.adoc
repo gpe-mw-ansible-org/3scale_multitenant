@@ -163,6 +163,10 @@ $ smtp_passwd=<change me>
 $ adminEmailUser=<change me>            #   ie:  jdoe
 $ adminEmailDomain=<change me>          #   ie:  redhat.com
 
+RESUME_CONTROL_PLANE_GWS=false          #   3scale API Manager includes a staging and production gateway by default
+                                        #   These two GWs typically are not used because the "data plane" (aka: gateways) tends to be deployed in a different environment
+                                        #   default value is:  false
+
 
 
 SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 2345.openshift.opentlc.com
@@ -271,7 +275,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT" \
                     -e"ocp_user_name_base=$ocp_user_name_base" \
                     -e"tenant_admin_user_name_base=$tenant_admin_user_name_base" \
-                    -e"use_padded_tenant_numbers=$use_padded_tenant_numbers"
+                    -e"use_padded_tenant_numbers=$use_padded_tenant_numbers" \
+                    -e"rht_service_token_user=$rht_service_token_user" \
+                    -e"rht_service_token_password=$rht_service_token_password"
 -----
 
 . After the tenant provisioning completes, you will see messages similar to the following at the end of the ansible standard out:
