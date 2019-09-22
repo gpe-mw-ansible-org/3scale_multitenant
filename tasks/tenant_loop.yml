@@ -106,20 +106,7 @@
     - name: "{{ocpAdminId}}     5) Give user view access to 3scale project."
       command: "oc adm policy add-role-to-user view {{ocpAdminId}} -n {{API_MANAGER_NS}}"
 
-    - name: "{{ocpAdminId}}    6) Create corresponding route on 3scale AMP system-provider service"
-      command: "oc create route edge {{orgName}}-provider --service=system-provider --hostname={{orgName}}-admin.{{ocp_apps_domain}} -n {{API_MANAGER_NS}}"
-      register: create_sys_provider_route
-      failed_when: create_sys_provider_route.stderr != ""  and 'AlreadyExists' not in create_sys_provider_route.stderr
-    - debug:
-        msg: "create_sys_provider_route.stderr = {{create_sys_provider_route.stderr}}"
-        verbosity: 1
-
-    - name: "{{ocpAdminId}}   7) Create corresponding route on 3scale AMP system-developer service"
-      command: "oc create route edge {{orgName}}-developer --service=system-developer --hostname={{orgName}}.{{ocp_apps_domain}} -n {{API_MANAGER_NS}}"
-      register: create_sys_developer_route
-      failed_when: create_sys_developer_route.stderr != "" and 'AlreadyExists' not in create_sys_developer_route.stderr
-
-    - name: "{{ocpAdminId}}  8) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
+    - name: "{{ocpAdminId}}  6) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
       lineinfile: 
         line: "{{ocpAdminId}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{tenantAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
         path: "{{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
@@ -148,8 +135,14 @@
     - set_fact:
         THREESCALE_PORTAL_ENDPOINT: "http://{{tenant_access_token.matches[0].value}}@system-master.{{ API_MANAGER_NS }}:3000"
       when: not tenant_reference_external_api_mgmt_routes|bool 
-    - set_fact:
-        BACKEND_ENDPOINT_OVERRIDE: "http://backend-listener.{{API_MANAGER_NS}}:3000"
+
+    - name: "Create threescale-registry-auth image pull secret in {{ API_MANAGER_NS }}"
+      shell: |
+        oc create secret docker-registry threescale-registry-auth \
+            --docker-server=registry.redhat.io \
+            --docker-username='{{ rht_service_token_user }}' \
+            --docker-password={{ rht_service_token_password }} \
+            -n  {{ gw_project_name }}
 
 
     # https://access.redhat.com/solutions/3394561
@@ -159,7 +152,6 @@
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
-               --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param APP_NAME=stage-apicast \
                --param ROUTE_NAME={{orgName}}-mt-stage-generic \
                --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \
@@ -176,7 +168,6 @@
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
                --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
-               --param BACKEND_ENDPOINT_OVERRIDE={{BACKEND_ENDPOINT_OVERRIDE}} \
                --param APP_NAME=prod-apicast \
                --param ROUTE_NAME={{orgName}}-mt-prod-generic \
                --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \

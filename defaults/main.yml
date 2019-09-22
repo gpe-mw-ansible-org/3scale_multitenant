@@ -8,6 +8,8 @@ OCP_AMP_ADMIN_ID: api0
 
 ocp_user_needs_quota: true
 
+RESUME_CONTROL_PLANE_GWS: false
+
 # dedicated API Manager
 quota_requests_cpu_dedicated: 4
 quota_limits_cpu_dedicated: 12            # Safe to over-provision on CPU; at any given time, API Manager for test purposes really only needs about 4 CPU total
@@ -46,10 +48,10 @@ API_MANAGER_NS: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
 is_shared_cluster: false
 
 # Use this for 3scale AMP on shared cluster
-threescale_template_shared: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.5.0.GA/amp/amp.yml
+threescale_template_shared: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.6.0.GA/amp/amp.yml
 
 # Use this for 3scale AMP on dedicated single VM
-threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.5.0.GA/amp/amp.yml
+threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.6.0.GA/amp/amp.yml
 
 work_dir: "/tmp/{{API_MANAGER_NS}}"
 modified_template_path: "{{work_dir}}/amp.yml"
@@ -104,7 +106,7 @@ tenant_output_dir: "{{new_app_output_dir}}/tenants_{{API_MANAGER_NS}}"
 tenant_provisioning_log_file: "tenant_provisioning.log"
 start_tenant: 1
 end_tenant: 1
-tenant_loop_delay: 10
+tenant_loop_delay: 15
 tenant_provisioning_results_file: "tenant_info_file_{{start_tenant}}_{{end_tenant}}.txt"
 
 # TO_DO:  Must current be set to true

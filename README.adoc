@@ -163,6 +163,10 @@ $ smtp_passwd=<change me>
 $ adminEmailUser=<change me>            #   ie:  jdoe
 $ adminEmailDomain=<change me>          #   ie:  redhat.com
 
+RESUME_CONTROL_PLANE_GWS=false          #   3scale API Manager includes a staging and production gateway by default
+                                        #   These two GWs typically are not used because the "data plane" (aka: gateways) tends to be deployed in a different environment
+                                        #   default value is:  false
+
 
 
 SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 2345.openshift.opentlc.com
@@ -170,6 +174,9 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
                                         #       oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
                                         #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
                                         #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+
+$ rht_service_token_user=<change me>    #   RHT Registry Service Account name as per:   https://access.redhat.com/terms-based-registry
+$ rht_service_token_password=<changeme> #   RHT Registry Service Account passwd as per: https://access.redhat.com/terms-based-registry/
 
 
 -----
@@ -216,7 +223,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"smtp_host=$smtp_host" \
                     -e"smtp_userid=$smtp_userid" \
                     -e"smtp_passwd=$smtp_passwd" \
-                    -e"is_shared_cluster=true"
+                    -e"is_shared_cluster=true" \
+                    -e"rht_service_token_user=$rht_service_token_user" \
+                    -e"rht_service_token_password=$rht_service_token_password"
 -----
 
 . After about 5 minutes, provisioning of the  API Manager should complete.
@@ -266,7 +275,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"create_gws_with_each_tenant=$CREATE_GWS_WITH_EACH_TENANT" \
                     -e"ocp_user_name_base=$ocp_user_name_base" \
                     -e"tenant_admin_user_name_base=$tenant_admin_user_name_base" \
-                    -e"use_padded_tenant_numbers=$use_padded_tenant_numbers"
+                    -e"use_padded_tenant_numbers=$use_padded_tenant_numbers" \
+                    -e"rht_service_token_user=$rht_service_token_user" \
+                    -e"rht_service_token_password=$rht_service_token_password"
 -----
 
 . After the tenant provisioning completes, you will see messages similar to the following at the end of the ansible standard out:

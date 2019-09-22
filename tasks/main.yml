@@ -5,15 +5,20 @@
     state: directory
     mode: 0755
 
+- name: Ensure RHT Registry Service Account credentials exist
+  debug:
+    msg: "Checking rht_service_token_user"
+  failed_when: (ACTION == "tenant_mgmt" or ACTION == "apimanager") and rht_service_token_user is not defined 
+
 - name: Running Pre Workload Tasks
   import_tasks: ./pre_workload.yml
   become: "{{ become_override | bool }}"
-  when: ACTION == "create" or ACTION == "provision" or ACTION == "apimanager"
+  when: ACTION == "apimanager"
 
 - name: Running Workload Tasks
   import_tasks: ./workload.yml
   become: "{{ become_override | bool }}"
-  when: ACTION == "create" or ACTION == "provision" or ACTION == "apimanager"
+  when: ACTION == "apimanager"
 
 - name: Running Tenant Provision Tasks
   block:
@@ -21,7 +26,7 @@
         create_or_delete_tenants: create
     - import_tasks: ./tenant_mgmt.yml
       become: "{{ become_override | bool }}"
-  when: ACTION == ACTION == "create" or ACTION == "provision" or ACTION == "tenant_mgmt"
+  when: ACTION == "tenant_mgmt"
 
 - name: Running Workload removal Tasks
   block:
