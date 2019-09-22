@@ -183,7 +183,13 @@ $ rht_service_token_password=<changeme> #   RHT Registry Service Account passwd 
 
 === Ansible Set-up
 
-. Install this role locally
+. Install this role on your bastion server:
++
+-----
+$ ansible-galaxy install gpe_mw_ansible.3scale_multitenant --force -p /etc/ansible/roles
+-----
++
+* Alternatively, if you are installing the role locally on your workstation computer:
 +
 -----
 $ ansible-galaxy install gpe_mw_ansible.3scale_multitenant --force -p $HOME/.ansible/roles
