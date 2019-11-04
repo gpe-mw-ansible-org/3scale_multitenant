@@ -46,7 +46,7 @@ This version of OpenShift should already be pre-installed before executing this 
 . This ansible role requires installation of the lxml python module on target host executing this ansible. ie:
 +
 -----
-# dnf install python2-lxml
+# dnf install python3-lxml
 -----
 
 . It is highly recommended that you SSH into the bastion node of your OCP cluster. The following tasks are best executed on the bastion node.
@@ -164,8 +164,9 @@ $ adminEmailUser=<change me>            #   ie:  jdoe
 $ adminEmailDomain=<change me>          #   ie:  redhat.com
 
 RESUME_CONTROL_PLANE_GWS=false          #   3scale API Manager includes a staging and production gateway by default
-                                        #   These two GWs typically are not used because the "data plane" (aka: gateways) tends to be deployed in a different environment
-                                        #   default value is:  false
+                                        #   These two GWs typically are not used for applying API policies to requests  because the "data plane" (aka: gateways) tends to be deployed in a different environment
+                                        #   However, the staging gateway is needed by system-provider web application for API Gateway policies details.
+                                        #   Subsquently, the default value is:  true
 
 
 
