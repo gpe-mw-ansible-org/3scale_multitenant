@@ -37,9 +37,9 @@
   shell: "oc adm policy add-cluster-role-to-user view system:serviceaccount:{{API_MANAGER_NS}}:default"
 
 # No longer relevant with 3scale 2.6;  Zync component now handles wildcard routes
-- name: Command to enable the wildcard routes in the OCP cluster for 3scale
-  shell: "oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true -n default"
-  ignore_errors: true
+#- name: Command to enable the wildcard routes in the OCP cluster for 3scale
+#  shell: "oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true -n default"
+#  ignore_errors: true
 
 ################      Multitenant  API Manager        #####################
 
