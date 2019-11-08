@@ -8,7 +8,7 @@ OCP_AMP_ADMIN_ID: api0
 
 ocp_user_needs_quota: true
 
-RESUME_CONTROL_PLANE_GWS: false
+RESUME_CONTROL_PLANE_GWS: true
 
 # dedicated API Manager
 quota_requests_cpu_dedicated: 4
