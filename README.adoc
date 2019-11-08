@@ -334,7 +334,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"orgName=$orgName" \
                     -e"ocpAdminId=$ocpAdminId" \
                     -e"tenantAdminId=$tenantAdminId" \
-                    -e"gw_project_name=$gw_project_name"
+                    -e"gw_project_name=$gw_project_name" \
+                    -e"rht_service_token_user=$rht_service_token_user" \
+                    -e"rht_service_token_password=$rht_service_token_password"
 -----
 
 
