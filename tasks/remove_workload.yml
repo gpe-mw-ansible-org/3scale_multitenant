@@ -24,6 +24,7 @@
 
 - name: Remove user Project
   shell: "oc delete project {{API_MANAGER_NS}}"
+  when: {{ REMOVE_TENANTS_ONLY }} == "false"
 
 - name: post_workload Tasks Complete
   debug:

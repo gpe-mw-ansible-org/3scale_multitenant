@@ -1,27 +1,27 @@
 ---
 
 # The following is only appropriate when create generic tenants whose names are sequential
-# The following is skipped when creating a "named" tenant, ie; openbanking-dev  
+# The following is skipped when creating a "named" tenant, ie; openbanking-dev
 - block:
   - set_fact:
-      counter: "{{ item }}"   
+      counter: "{{ item }}"
 
   # Padded sequence number
   - block:
-    - set_fact: 
+    - set_fact:
         counter: "{{ '%02d'|format(item|int) }}"
-    - debug: 
+    - debug:
         msg: "{{ item }} padded to {{ counter }}"
     when: use_padded_tenant_numbers|bool
 
   # Name of ocp user that is an admin to the project where 3scale resources reside
   - set_fact:
       ocpAdminId: "{{ ocp_user_name_base }}{{ counter }}"
-  
+
   # Name of 3scale API administrator of the tenant
   - set_fact:
       tenantAdminId: "{{ tenant_admin_user_name_base }}{{ counter }}"
-  
+
   - set_fact:
       orgName: "{{ocpAdminId}}-{{API_MANAGER_NS}}"
 
@@ -46,12 +46,12 @@
       set_fact:
         tenantAdminEmail: "{{adminEmailUser}}%2B{{ counter }}%40{{adminEmailDomain}}"
     - debug:
-        msg: "{{ocpAdminId}} tenantAdminEmail = {{tenantAdminEmail}}" 
+        msg: "{{ocpAdminId}} tenantAdminEmail = {{tenantAdminEmail}}"
 
       # NOTE:  As of 3scale 2.2, this operation is not idempotent.
       #        It creates a new tenant given the same parameters.
       #        Public and Admin domains of these tenants are different; ie:
-      #         user1-3scale-mt-amp0-3-admin.apps.3295.openshift.opentlc.com 
+      #         user1-3scale-mt-amp0-3-admin.apps.3295.openshift.opentlc.com
       #         user1-3scale-mt-amp0-2-admin.apps.3295.openshift.opentlc.com
     - uri:
         url: "{{create_tenant_url}}"
@@ -80,12 +80,12 @@
         path: "{{tenant_output_dir}}/{{output_file}}"
         xpath: //account/id
         content: text
-      register: account_id 
+      register: account_id
     - xml:
         path: "{{tenant_output_dir}}/{{output_file}}"
         xpath: //user[state = "pending"]/id
         content: text
-      register: user_id 
+      register: user_id
     - debug:
         msg: "{{tenant_access_token.matches[0].value}}  {{account_id.matches[0].id}} {{user_id.matches[0].id}}"
         verbosity: 0
@@ -107,7 +107,7 @@
       command: "oc adm policy add-role-to-user view {{ocpAdminId}} -n {{API_MANAGER_NS}}"
 
     - name: "{{ocpAdminId}}  6) Populate {{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
-      lineinfile: 
+      lineinfile:
         line: "{{ocpAdminId}}\t{{orgName}}-admin.{{ocp_apps_domain}}\t{{tenantAdminId}}\t{{tenantAdminPasswd}}\t{{tenant_access_token.matches[0].value}}"
         path: "{{tenant_output_dir}}/{{tenant_provisioning_results_file}}"
         create: yes
@@ -116,7 +116,7 @@
   when: create_or_delete_tenants == "create"
 
 #  ########################################################################################################## #
- 
+
 
 
 #  ############                 Create Corresponding API Gateways for each Tenant                   ######### #
@@ -131,10 +131,10 @@
 
     - set_fact:
         THREESCALE_PORTAL_ENDPOINT: "https://{{tenant_access_token.matches[0].value}}@{{orgName}}-admin.{{ocp_apps_domain}}"
-      when: tenant_reference_external_api_mgmt_routes|bool 
+      when: tenant_reference_external_api_mgmt_routes|bool
     - set_fact:
         THREESCALE_PORTAL_ENDPOINT: "http://{{tenant_access_token.matches[0].value}}@system-master.{{ API_MANAGER_NS }}:3000"
-      when: not tenant_reference_external_api_mgmt_routes|bool 
+      when: not tenant_reference_external_api_mgmt_routes|bool
 
     - name: "Create threescale-registry-auth image pull secret in {{ API_MANAGER_NS }}"
       shell: |
@@ -143,7 +143,7 @@
             --docker-username='{{ rht_service_token_user }}' \
             --docker-password={{ rht_service_token_password }} \
             -n  {{ gw_project_name }}
-
+      ignore_errors: true
 
     # https://access.redhat.com/solutions/3394561
     #   - stage gateway pulls proxy configs with every request to backend service
@@ -196,14 +196,14 @@
 
 
 #  ################################             Delete Tenant            ##################################### #
-#  URI of tenant delete API is:  
+#  URI of tenant delete API is:
 #          /master/api/providers/{id}.xml
 #  As of 3scale API Manager v2.2, there is not an API resource that allows for tenant lookup
-#  TO-DO: 
-#       implement mechanism to identify id of tenant.  
+#  TO-DO:
+#       implement mechanism to identify id of tenant.
 #       Probably best to do so as an xml file that is populated with creation of each tenant.
 #       In this section, the tenant xml snippet is located and deleted in this xml file
- 
+
 - block:
     - name: "{{ocpAdminId}}      **********   TENANT DELETION  **********"
       debug:
