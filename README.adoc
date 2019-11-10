@@ -313,15 +313,15 @@ Alternative to the ability to create a sequence of generica tenants, a _named_ t
 
 
 -----
-orgName=openbanking-prod
+export orgName=openbanking-prod
 
-ocpAdminId=ocp01                           #   name of OCP user that will have access to their corresponding API Mgmt related projects.
+export ocpAdminId=ocp01                           #   name of OCP user that will have access to their corresponding API Mgmt related projects.
 
-tenantAdminId=api01                        #   name of API user that will be the admin of their API tenants (and admins of thier own API gateways)
+export tenantAdminId=api01                        #   name of API user that will be the admin of their API tenants (and admins of thier own API gateways)
 
-CREATE_GWS_WITH_EACH_TENANT=true           #   if true, then an OCP project with API gateways will be created for each corresponding tenant in the same OCP cluster where API Manager resides
+export CREATE_GWS_WITH_EACH_TENANT=true           #   if true, then an OCP project with API gateways will be created for each corresponding tenant in the same OCP cluster where API Manager resides
 
-gw_project_name=$orgName-gw
+export gw_project_name=$orgName-gw
 
 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
@@ -352,7 +352,8 @@ The useId and password are generated using the following ansible variables found
 === Delete 3scale API manager
 
 -----
-REMOVE_TENANTS_ONLY=true
+export REMOVE_TENANTS_ONLY=true
+
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=remove" \
                     -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
