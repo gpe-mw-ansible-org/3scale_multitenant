@@ -113,6 +113,13 @@
         replace: 'cpu: 500m'
   when: not is_shared_cluster|bool
 
+- name: Use ReadWriteOnce for 3scale CMS
+  replace:
+    path: "{{ modified_template_path }}"
+    regexp: '(ReadWriteMany)'
+    replace: 'ReadWriteOnce'
+  when: use_rwo_for_cms|bool
+
 
 - name: Process the OpenShift Template and create the OpenShift objects for the 3scale API Management Platform
   shell: |

@@ -74,6 +74,8 @@ smtp_authentication: plain
 smtp_userid: changeme
 smtp_passwd: changeme
 
+# CMS
+use _rwo_for_cms: false
 
 ######   new tenants    #######
  

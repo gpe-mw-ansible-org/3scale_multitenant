@@ -176,6 +176,14 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
                                         #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
                                         #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
 
+use_rwo_for_cms=false                   #   3scale control plane consists of a Content Management System (CMS) that typically is scaled out for improved performance in a production environment
+                                        #   This CMS subsequently requires a ReadWriteMany access mode for its corresponding "system-storage" PVC
+                                        #   In a deployment of 3scale control plane to OCP 4.* where AWS EBS is used for storage, a ReadWriteMany access mode is not available
+                                        #     Reference:   https://docs.openshift.com/container-platform/4.2/storage/understanding-persistent-storage.html#pv-access-modes_understanding-persistent-storage
+                                        #   In that scenario, set this environment variable to: true
+                                        #   Doing so hacks the 3scale control plane template to specify ReadWriteOnce (and not ReadWriteMany)
+                                        #   If you set this to true, then do not attempt to create more than one replica of the system-app pod 
+
 $ rht_service_token_user=<change me>    #   RHT Registry Service Account name as per:   https://access.redhat.com/terms-based-registry
 $ rht_service_token_password=<changeme> #   RHT Registry Service Account passwd as per: https://access.redhat.com/terms-based-registry/
 
@@ -226,7 +234,8 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"smtp_passwd=$smtp_passwd" \
                     -e"is_shared_cluster=true" \
                     -e"rht_service_token_user=$rht_service_token_user" \
-                    -e"rht_service_token_password=$rht_service_token_password"
+                    -e"rht_service_token_password=$rht_service_token_password" \
+                    -e"use_rwo_for_cms=$use_rwo_for_cms"
 -----
 
 . After about 5 minutes, provisioning of the  API Manager should complete.
