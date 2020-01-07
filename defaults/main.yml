@@ -48,10 +48,10 @@ API_MANAGER_NS: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
 is_shared_cluster: false
 
 # Use this for 3scale AMP on shared cluster
-threescale_template_shared: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.6.0.GA/amp/amp.yml
+threescale_template_shared: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.7.1.GA/amp/amp.yml
 
 # Use this for 3scale AMP on dedicated single VM
-threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.6.0.GA/amp/amp.yml
+threescale_template_dedicated: https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.7.1.GA/amp/amp.yml
 
 work_dir: "/tmp/{{API_MANAGER_NS}}"
 modified_template_path: "{{work_dir}}/amp.yml"
@@ -98,7 +98,7 @@ use_padded_tenant_numbers: true
 
 create_gws_with_each_tenant: "true"                
 
-tenant_api_gw_template_url: "https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/rhte/3scale-apicast.yml"
+tenant_api_gw_template_url: "https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.7.1.GA/apicast-gateway/apicast.yml"
 tenant_api_wildcard_gw_template_url: "https://raw.githubusercontent.com/gpe-mw-training/3scale_onpremise_implementation_labs/master/resources/rhte/3scale-wc-router.yml"
 
 adminEmailUser: changeme

@@ -144,21 +144,22 @@
             --docker-password={{ rht_service_token_password }} \
             -n  {{ gw_project_name }}
 
-
+    - name: "Create threescale-portal-endpoint secret in {{ API_MANAGER_NS }}"
+      shell: |
+        oc secret new-basicauth apicast-configuration-url-secret \
+            --password={{ THREESCALE_PORTAL_ENDPOINT }} \
+            -n  {{ gw_project_name }}
     # https://access.redhat.com/solutions/3394561
     #   - stage gateway pulls proxy configs with every request to backend service
     - name: "{{ocpAdminId}} 10)        Create Staging Gateway; {{ THREESCALE_PORTAL_ENDPOINT }}"
       shell: |
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
-               --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
-               --param APP_NAME=stage-apicast \
-               --param ROUTE_NAME={{orgName}}-mt-stage-generic \
-               --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \
-               --param THREESCALE_DEPLOYMENT_ENV=sandbox \
-               --param APICAST_CONFIGURATION_LOADER=lazy \
-               --param APICAST_CONFIGURATION_CACHE=0 \
-               --param APICAST_MANAGEMENT_API=debug \
+               --param APICAST_NAME=stage-apicast \
+               --param DEPLOYMENT_ENVIRONMENT=sandbox \
+               --param CONFIGURATION_LOADER=lazy \
+               --param CONFIGURATION_CACHE=0 \
+               --param MANAGEMENT_API=debug \
                -n {{ gw_project_name }}
       register: create_stage_gw
       failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
@@ -167,28 +168,12 @@
       shell: |
         oc new-app \
                -f {{tenant_api_gw_template_url}} \
-               --param THREESCALE_PORTAL_ENDPOINT={{THREESCALE_PORTAL_ENDPOINT}} \
-               --param APP_NAME=prod-apicast \
-               --param ROUTE_NAME={{orgName}}-mt-prod-generic \
-               --param WILDCARD_DOMAIN={{ ocp_apps_domain }} \
-               --param THREESCALE_DEPLOYMENT_ENV=production \
-               --param APICAST_CONFIGURATION_LOADER=boot \
+               --param APICAST_NAME=prod-apicast \
+               --param DEPLOYMENT_ENVIRONMENT=production \
+               --param CONFIGURATION_LOADER=boot \
                -n {{ gw_project_name }}
       register: create_prod_gw
       failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
-
-    - name: "{{ocpAdminId}} 12)        Create Wildcard Gateway     {{ GW_WILDCARD_DOMAIN }} {{ MASTER_API_HOST }}"
-      shell: |
-        oc new-app \
-               -f {{ tenant_api_wildcard_gw_template_url }} \
-               --param GW_WILDCARD_DOMAIN={{ GW_WILDCARD_DOMAIN }} \
-               --param MASTER_API_HOST={{ MASTER_API_HOST }} \
-               --param LOG_LEVEL=debug \
-               -n {{ gw_project_name }}
-      register: create_wc_gw
-      failed_when: create_wc_gw.stderr != ""  and 'already exists' not in create_wc_gw.stderr
-
-
 
   when: create_or_delete_tenants == "create" and create_gws_with_each_tenant|bool
 
