@@ -49,12 +49,6 @@ This version of OpenShift should already be pre-installed before executing this 
 # dnf install python3-lxml
 -----
 
-. It is highly recommended that you SSH into the bastion node of your OCP cluster. The following tasks are best executed on the bastion node.
-+
------
-# ssh -i ~/.ssh/your_private_key_name <OPENTLC_ID>@bastion.<GUID>.openshift.opentlc.com
------
-
 . Ensure that you are explicitly logged onto the master API of the OCP cluster, from your bastion node.
 +
 -----
