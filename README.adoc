@@ -149,11 +149,14 @@ $ source ~/.bashrc
 
 
 # SMTP Configurations to enable API Manager to send emails
+# the following SMTP configurations can be set to null values, if the hackathon or lab exercises you are delivering do not require 3scale Developer Portal sign-up flows
 $ smtp_host=smtp.socketlabs.com
 $ smtp_port=587
 $ smtp_authentication=login
 $ smtp_userid=<change me>
 $ smtp_passwd=<change me>
+
+# these fields have to contain valid values
 $ adminEmailUser=<change me>            #   ie:  jdoe
 $ adminEmailDomain=<change me>          #   ie:  redhat.com
 
