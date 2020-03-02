@@ -176,7 +176,7 @@ use_rwo_for_cms=false                   #   3scale control plane consists of a C
                                         #     Reference:   https://docs.openshift.com/container-platform/4.2/storage/understanding-persistent-storage.html#pv-access-modes_understanding-persistent-storage
                                         #   In that scenario, set this environment variable to: true
                                         #   Doing so hacks the 3scale control plane template to specify ReadWriteOnce (and not ReadWriteMany)
-                                        #   If you set this to true, then do not attempt to create more than one replica of the system-app pod 
+                                        #   If you set this to true, then do not attempt to create more than one replica of the system-app pod
 
 $ rht_service_token_user=<change me>    #   RHT Registry Service Account name as per:   https://access.redhat.com/terms-based-registry
 $ rht_service_token_password=<changeme> #   RHT Registry Service Account passwd as per: https://access.redhat.com/terms-based-registry/
@@ -331,7 +331,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"orgName=$orgName" \
                     -e"ocpAdminId=$ocpAdminId" \
                     -e"tenantAdminId=$tenantAdminId" \
-                    -e"gw_project_name=$gw_project_name"
+                    -e"gw_project_name=$gw_project_name" \
+                    -e"rht_service_token_user=$rht_service_token_user" \
+                    -e"rht_service_token_password=$rht_service_token_password"
 -----
 
 
