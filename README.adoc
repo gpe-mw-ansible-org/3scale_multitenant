@@ -172,6 +172,7 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
                                         #       oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
                                         #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
                                         #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+                                        #       ocp 4 workshop  :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5,6 | cut -d':' -f 1`
 
 use_rwo_for_cms=false                   #   3scale control plane consists of a Content Management System (CMS) that typically is scaled out for improved performance in a production environment
                                         #   This CMS subsequently requires a ReadWriteMany access mode for its corresponding "system-storage" PVC
