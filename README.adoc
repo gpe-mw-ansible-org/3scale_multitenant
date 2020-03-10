@@ -149,11 +149,14 @@ $ source ~/.bashrc
 
 
 # SMTP Configurations to enable API Manager to send emails
+# the following SMTP configurations can be set to null values, if the hackathon or lab exercises you are delivering do not require 3scale Developer Portal sign-up flows
 $ smtp_host=smtp.socketlabs.com
 $ smtp_port=587
 $ smtp_authentication=login
 $ smtp_userid=<change me>
 $ smtp_passwd=<change me>
+
+# these fields have to contain valid values
 $ adminEmailUser=<change me>            #   ie:  jdoe
 $ adminEmailDomain=<change me>          #   ie:  redhat.com
 
@@ -169,6 +172,7 @@ SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 
                                         #       oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
                                         #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
                                         #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
+                                        #       ocp 4 workshop  :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5,6 | cut -d':' -f 1`
 
 use_rwo_for_cms=false                   #   3scale control plane consists of a Content Management System (CMS) that typically is scaled out for improved performance in a production environment
                                         #   This CMS subsequently requires a ReadWriteMany access mode for its corresponding "system-storage" PVC
@@ -176,7 +180,7 @@ use_rwo_for_cms=false                   #   3scale control plane consists of a C
                                         #     Reference:   https://docs.openshift.com/container-platform/4.2/storage/understanding-persistent-storage.html#pv-access-modes_understanding-persistent-storage
                                         #   In that scenario, set this environment variable to: true
                                         #   Doing so hacks the 3scale control plane template to specify ReadWriteOnce (and not ReadWriteMany)
-                                        #   If you set this to true, then do not attempt to create more than one replica of the system-app pod 
+                                        #   If you set this to true, then do not attempt to create more than one replica of the system-app pod
 
 $ rht_service_token_user=<change me>    #   RHT Registry Service Account name as per:   https://access.redhat.com/terms-based-registry
 $ rht_service_token_password=<changeme> #   RHT Registry Service Account passwd as per: https://access.redhat.com/terms-based-registry/
@@ -331,7 +335,9 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"orgName=$orgName" \
                     -e"ocpAdminId=$ocpAdminId" \
                     -e"tenantAdminId=$tenantAdminId" \
-                    -e"gw_project_name=$gw_project_name"
+                    -e"gw_project_name=$gw_project_name" \
+                    -e"rht_service_token_user=$rht_service_token_user" \
+                    -e"rht_service_token_password=$rht_service_token_password"
 -----
 
 
