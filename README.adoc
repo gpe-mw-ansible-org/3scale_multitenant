@@ -43,10 +43,11 @@ This version of OpenShift should already be pre-installed before executing this 
 
 . Using a version of oc utility that corresponds to your target OCP cluster, ensure oc utility is already authenticated as the cluster-admin.
 
-. This ansible role requires installation of the lxml python module on target host executing this ansible. ie:
+. This ansible role requires installation of the lxml and openshift python modules on target host executing this ansible. ie:
 +
 -----
 # dnf install python3-lxml
+# dnf install python3-openshift
 -----
 
 . Ensure that you are explicitly logged onto the master API of the OCP cluster, from your bastion node.
@@ -155,6 +156,7 @@ $ smtp_port=587
 $ smtp_authentication=login
 $ smtp_userid=<change me>
 $ smtp_passwd=<change me>
+$ smtp_domain=<change me>               # SMTP email domain, e.g redhat.com
 
 # these fields have to contain valid values
 $ adminEmailUser=<change me>            #   ie:  jdoe

@@ -143,13 +143,17 @@
 # Only set-up smtp if all settings are correct
 # Otherwise, errors will be thrown during provisioning of tenents if smtp settings are incorrect
 - name: "Modify smtp config map"
-  block:
-    - command: oc patch configmap smtp -p "{\"data\":{\"address\":\"{{smtp_host}}\"}}" -n {{API_MANAGER_NS}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"port\":\"{{smtp_port}}\"}}" -n {{API_MANAGER_NS}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"authentication\":\"{{smtp_authentication}}\"}}" -n {{API_MANAGER_NS}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"username\":\"{{smtp_userid}}\"}}" -n {{API_MANAGER_NS}}
-    - command: oc patch configmap smtp -p "{\"data\":{\"password\":\"{{smtp_passwd}}\"}}" -n {{API_MANAGER_NS}}
+  k8s:
+    state: present
+    force: yes
+    merge_type:
+    - strategic-merge
+    - merge
+    definition: "{{ lookup('template', item ) | from_yaml }}"
+  loop:
+  - ./templates/system-smtp.j2
   when: smtp_userid != "changeme"
+
 
 
 # #### Storage Tier
