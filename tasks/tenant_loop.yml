@@ -146,8 +146,8 @@
 
     - name: "Create threescale-portal-endpoint secret in {{ API_MANAGER_NS }}"
       shell: |
-        oc secret new-basicauth apicast-configuration-url-secret \
-            --password={{ THREESCALE_PORTAL_ENDPOINT }} \
+        oc create secret generic apicast-configuration-url-secret \
+            --from-literal=password={{ THREESCALE_PORTAL_ENDPOINT }} \
             -n  {{ gw_project_name }}
     # https://access.redhat.com/solutions/3394561
     #   - stage gateway pulls proxy configs with every request to backend service
