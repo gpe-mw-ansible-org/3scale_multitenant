@@ -379,3 +379,37 @@ To correct issues pertaining to this stale state, the following needs to occur :
 . Change the value of the _THREESCALE_SUPERDOMAIN_ variable in the configmap:  system-environment:
 
 Examples of how to change the above are found link:https://gist.github.com/jbride/be32113707418cb43d73c9ef28a09b9d[here]
+
+== Manual Tenant Deployment
+
+-----
+$ oc create secret generic apicast-configuration-url-secret \
+            --from-literal=password=https://c06015d7fba524064feaf5ae6b24e1a8@vplanner-admin.apps.rhtnckpmg.rhsledocp.com \
+            -n vaccination-planner-ibm
+-----
+
+-----
+oc new-app \
+       -f https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.9.0.GA/apicast-gateway/apicast.yml \
+       --param APICAST_NAME=stage-apicast \
+       --param DEPLOYMENT_ENVIRONMENT=sandbox \
+       --param CONFIGURATION_LOADER=lazy \
+       --param CONFIGURATION_CACHE=0 \
+       --param MANAGEMENT_API=debug \
+       --param LOG_LEVEL=debug \
+       -n vaccination-planner-ibm
+oc create route edge stage-apicast --service=stage-apicast
+-----
+
+-----
+oc new-app \
+       -f https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.9.0.GA/apicast-gateway/apicast.yml \
+       --param APICAST_NAME=prod-apicast \
+       --param DEPLOYMENT_ENVIRONMENT=production \
+       --param CONFIGURATION_LOADER=boot \
+       --param LOG_LEVEL=debug \
+       -n vaccination-planner-ibm
+oc create route edge prod-apicast --service=prod-apicast
+-----
+
+
