@@ -390,7 +390,7 @@ $ oc create secret generic apicast-configuration-url-secret \
 
 -----
 oc new-app \
-       -f https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.9.0.GA/apicast-gateway/apicast.yml \
+       -f https://raw.githubusercontent.com/3scale/3scale-amp-openshift-templates/2.9.1.GA/apicast-gateway/apicast.yml \
        --param APICAST_NAME=stage-apicast \
        --param DEPLOYMENT_ENVIRONMENT=sandbox \
        --param CONFIGURATION_LOADER=lazy \

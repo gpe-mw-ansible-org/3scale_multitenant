@@ -136,7 +136,7 @@
         THREESCALE_PORTAL_ENDPOINT: "http://{{tenant_access_token.matches[0].value}}@system-master.{{ API_MANAGER_NS }}:3000"
       when: not tenant_reference_external_api_mgmt_routes|bool 
 
-    - name: "Create threescale-registry-auth image pull secret in {{ API_MANAGER_NS }}"
+    - name: "Create threescale-registry-auth image pull secret in {{ gw_project_name }}"
       shell: |
         oc create secret docker-registry threescale-registry-auth \
             --docker-server=registry.redhat.io \
@@ -144,11 +144,12 @@
             --docker-password={{ rht_service_token_password }} \
             -n  {{ gw_project_name }}
 
-    - name: "Create threescale-portal-endpoint secret in {{ API_MANAGER_NS }}"
+    - name: "Create threescale-portal-endpoint secret in {{ gw_project_name }}"
       shell: |
         oc create secret generic apicast-configuration-url-secret \
             --from-literal=password={{ THREESCALE_PORTAL_ENDPOINT }} \
             -n  {{ gw_project_name }}
+
     # https://access.redhat.com/solutions/3394561
     #   - stage gateway pulls proxy configs with every request to backend service
     - name: "{{ocpAdminId}} 10)        Create Staging Gateway; {{ THREESCALE_PORTAL_ENDPOINT }}"
@@ -163,6 +164,7 @@
                -n {{ gw_project_name }}
       register: create_stage_gw
       failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
+      ignore_errors: true  # https://docs.openshift.com/container-platform/4.7/release_notes/ocp-4-7-release-notes.html#ocp-4-7-apiversion-v1
 
     - name: "{{ocpAdminId}} 11)        Create Production Gateway; {{ THREESCALE_PORTAL_ENDPOINT }}"
       shell: |
@@ -174,6 +176,7 @@
                -n {{ gw_project_name }}
       register: create_prod_gw
       failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
+      ignore_errors: true  # https://docs.openshift.com/container-platform/4.7/release_notes/ocp-4-7-release-notes.html#ocp-4-7-apiversion-v1
 
   when: create_or_delete_tenants == "create" and create_gws_with_each_tenant|bool
 
