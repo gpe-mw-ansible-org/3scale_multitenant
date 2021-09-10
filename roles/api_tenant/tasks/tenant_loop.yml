@@ -1,0 +1,132 @@
+---
+
+# The following is only appropriate when create generic tenants whose names are sequential
+# The following is skipped when creating a "named" tenant, ie; openbanking-dev  
+- block:
+  - set_fact:
+      counter: "{{ item }}"   
+
+  # Padded sequence number
+  - block:
+    - set_fact: 
+        counter: "{{ '%02d'|format(item|int) }}"
+    - debug: 
+        msg: "{{ item }} padded to {{ counter }}"
+    when: use_padded_tenant_numbers|bool
+
+  # Name of ocp user that is an admin to the project where 3scale gateway resources will reside
+  - set_fact:
+      ocpAdminId: "{{ ocp_user_name_base }}{{ counter }}"
+  
+  # Name of 3scale API administrator of the tenant
+  - set_fact:
+      tenantAdminId: "{{ tenant_admin_user_name_base }}{{ counter }}"
+  
+  - set_fact:
+      orgName: "{{ ocpAdminId }}-{{ API_MANAGER_NS }}"
+
+  - set_fact:
+      gw_project_name: "{{ ocpAdminId }}-gw"
+
+  when: item > 0
+
+# Wildcard gateway facts
+- set_fact:
+    GW_WILDCARD_DOMAIN: "wc-router.{{ ocpAdminId }}.{{ ocp_domain }}"
+- set_fact:
+    MASTER_API_HOST: "https://{{ master_access_token }}@{{ API_MANAGER_NS }}-master.{{ ocp_domain }}"
+
+- set_fact:
+    output_file: "{{ orgName }}-tenant-signup.xml"
+
+#  ################################             Create Tenant            ##################################### #
+
+- block:
+    - name: "{{ ocpAdminId }}      1)  **********   TENANT CREATION  **********"
+      set_fact:
+        tenantAdminEmail: "{{ adminEmailUser }}%2B{{ counter }}%40{{ adminEmailDomain }}"
+    - debug:
+        msg: "{{ ocpAdminId }} tenantAdminEmail = {{ tenantAdminEmail }}"
+    - debug:
+        msg: "{{ create_tenant_url }}"
+        
+
+      # NOTE:  As of 3scale 2.2, this operation is not idempotent.
+      #        It creates a new tenant given the same parameters.
+      #        Public and Admin domains of these tenants are different; ie:
+      #         user1-3scale-mt-amp0-3-admin.apps.3295.openshift.opentlc.com 
+      #         user1-3scale-mt-amp0-2-admin.apps.3295.openshift.opentlc.com
+    - uri:
+        url: "{{ create_tenant_url }}"
+        method: POST
+        headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        body: "access_token={{ master_access_token }}&org_name={{ orgName }}&username={{ tenantAdminId }}&password={{ tenantAdminPasswd }}&email={{ tenantAdminEmail }}"
+        timeout: 20
+        status_code: 201
+        return_content: yes
+        validate_certs: no
+      register: create_tenant_response
+
+    - name: "{{ ocpAdminId }}     2) copy response to {{ tenant_output_dir }}/{{ output_file }}"
+      copy:
+        content: "{{ create_tenant_response.content }}"
+        dest: "{{ tenant_output_dir }}/{{ output_file }}"
+
+    - name: "{{ ocpAdminId }}     3) parse xml and extract access token, account_id and user_id"
+      xml:
+        path: "{{ tenant_output_dir }}/{{ output_file }}"
+        xpath: //access_token/value
+        content: text
+      register: tenant_access_token
+    - xml:
+        path: "{{ tenant_output_dir }}/{{ output_file }}"
+        xpath: //account/id
+        content: text
+      register: account_id 
+    - xml:
+        path: "{{ tenant_output_dir }}/{{ output_file }}"
+        xpath: //user[state = "pending"]/id
+        content: text
+      register: user_id 
+    - debug:
+        msg: "{{ tenant_access_token.matches[0].value }}  {{ account_id.matches[0].id }} {{ user_id.matches[0].id }}"
+        verbosity: 0
+
+    - name: "{{ ocpAdminId }}     4) activate new user"
+      set_fact:
+        activate_user_url: "https://{{ API_MANAGER_NS }}-master.{{ ocp_domain }}/admin/api/accounts/{{ account_id.matches[0].id }}/users/{{ user_id.matches[0].id }}/activate.xml"
+    - uri:
+        url: "{{ activate_user_url }}"
+        method: PUT
+        body: "access_token={{ master_access_token }}"
+        timeout: 10
+        status_code: 200
+        return_content: yes
+        validate_certs: no
+      register: activate_user_response
+
+    - name: "{{ ocpAdminId }}     5) Give user view access to 3scale project."
+      command: "oc adm policy add-role-to-user view {{ ocpAdminId }} -n {{ API_MANAGER_NS }}"
+
+    - name: "{{ ocpAdminId }}  6) Populate {{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
+      lineinfile: 
+        line: "{{ ocpAdminId }}\t{{ orgName }}-admin.{{ ocp_domain }}\t{{ tenantAdminId }}\t{{ tenantAdminPasswd }}\t{{ tenant_access_token.matches[0].value }}"
+        path: "{{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
+        create: yes
+        state: present
+
+#  ########################################################################################################## #
+
+
+- include_role:
+    name: ../roles/api_gw
+  vars:
+    threescale_tenant_admin_accesstoken: "{{ tenant_access_token.matches[0].value }}"
+    threescale_tenant_admin_hostname: "{{ ocpAdminId }}-{{ API_MANAGER_NS }}-admin.{{ ocp_domain }}"
+    namespace: "{{ ocpAdminId }}-gw"
+    work_dir_name: "{{ ocpAdminId }}-gw"
+  when: create_gws_with_each_tenant|bool
+ 
+- pause:
+    seconds: "{{tenant_loop_delay}}"

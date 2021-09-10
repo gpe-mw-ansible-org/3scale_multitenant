@@ -23,7 +23,7 @@
   register: create_stage_gw
   failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
 
-- name: "wait until {{ stage_apicast_name }} dc is up and running"
+- name: "wait until {{ stage_apicast_name }} dc is running in {{ namespace }}"
   shell: "{{ openshift_cli }} get dc {{ stage_apicast_name }} -o template --template={{ json_template }} -n {{ namespace }}"
   vars:
     json_template: '\{\{.status.readyReplicas\}\}'
@@ -66,7 +66,7 @@
   failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
   ignore_errors: true
 
-- name: "wait until {{ prod_apicast_name }} dc is up and running"
+- name: "wait until {{ prod_apicast_name }} dc is running in {{ namespace }}"
   shell: "{{ openshift_cli }} get dc {{ prod_apicast_name }} -o template --template={{ json_template }} -n {{ namespace }}"
   vars:
     json_template: '\{\{.status.readyReplicas\}\}'

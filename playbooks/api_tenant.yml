@@ -1,0 +1,28 @@
+---
+
+- name: Deploy threescale tenant 
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  run_once: true
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/api_tenant.yml
+
+  tasks:
+    - set_fact:
+        namespace: "{{ API_MANAGER_NS }}"
+        work_dir_name: "tenant"
+    - include_role:
+        name: ../roles/api_tenant
+      when: >
+        ACTION is not defined or
+        ACTION is none or
+        ACTION|trim() == "" or
+        ACTION|trim() == "install"
+    - include_role:
+        name: ../roles/api_tenant
+        tasks_from: uninstall
+      when: >
+        ACTION is defined and
+        ACTION|trim() == "uninstall"

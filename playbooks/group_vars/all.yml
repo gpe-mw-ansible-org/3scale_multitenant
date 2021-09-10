@@ -7,4 +7,6 @@ OCP_AMP_ADMIN_ID: api0
 lab_name: 3scale-mt
 API_MANAGER_NS: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
 
+master_access_token: wtqhhsly
+
 openshift_cli: oc

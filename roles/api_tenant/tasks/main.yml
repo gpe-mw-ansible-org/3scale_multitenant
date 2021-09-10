@@ -1,0 +1,30 @@
+---
+
+- name: Tenant provisioning starting
+  set_fact:
+    create_tenant_url: "https://{{ API_MANAGER_NS }}-master.{{ ocp_domain }}/master/api/providers.xml" 
+
+- set_fact:
+    delete_tenant_sub_url: "https://{{ API_MANAGER_NS }}-master.{{ ocp_domain }}/master/api/providers/"
+
+- name: "Initialize {{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
+  lineinfile: 
+    line: "OCP user id\t3scale admin URL\tAPI admin Id\tAPI admin passwd\tAPI admin access token"
+    path: "{{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
+    create: yes
+    state: present
+
+
+- name: "Loop through tenant prep {{ start_tenant }} {{ end_tenant }}"
+  include: tenant_loop.yml
+  loop: "{{ range(start_tenant|int, end_tenant|int + 1, 1)|list }}"
+
+
+- name: Tenant Rollout Complete
+  debug:
+    msg:
+      - "tenant_output_dir:  {{ tenant_output_dir }}"
+      - "tenant_provisioning_log_file = {{ tenant_output_dir }}/{{ tenant_provisioning_log_file }}"
+      - "tenant_provisioning_results_file = {{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
+      - "start and end tenants = {{ start_tenant }}  {{ end_tenant }}"
+      - "create API Gateways for each tenant = {{ create_gws_with_each_tenant }}"

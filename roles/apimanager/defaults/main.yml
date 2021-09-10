@@ -1,7 +1,6 @@
 ---
 
 amp_master_passwd: master
-master_access_token: wtqhhsly
 
 default_tenant_name: "t1"
 default_tenant_admin_passwd: admin
