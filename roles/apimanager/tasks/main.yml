@@ -6,6 +6,9 @@
 # Use this ansible play for this course only.
 # Afterwards, leverage (and contribute to) the original ansible playbook created by nmasse-itix.
 
+- set_fact:
+    modified_template_path: "{{work_dir}}/amp.yml"
+
 - name: check if user is cluster admin
   shell: "oc get project default"
   register: default_project_result
@@ -16,72 +19,38 @@
     msg: "User does not have cluster-admin rights"
   when: default_project_result is failed
 
-- name: check if API Manager deployed
-  shell: "oc get project {{API_MANAGER_NS}}"
-  register: api_project_result
-  ignore_errors: true
-  changed_when: false
-
-- name: "Create project {{ API_MANAGER_NS }}"
-  shell: "oc adm new-project {{ API_MANAGER_NS }} --display-name={{ API_MANAGER_NS }} --admin={{ OCP_AMP_ADMIN_ID }}"
-  when: api_project_result is failed
-
 - name: Annotate the empty project as requested by user
   shell: "oc annotate namespace {{API_MANAGER_NS}} openshift.io/requester={{OCP_AMP_ADMIN_ID}} --overwrite"
 
-- name: Make sure we go back do default project
-  shell: "oc project default"
-  when: api_project_result is failed
-
 - name: Enable 3scale Service Discovery
   shell: "oc adm policy add-cluster-role-to-user view system:serviceaccount:{{API_MANAGER_NS}}:default"
-
-# No longer relevant with 3scale 2.6;  Zync component now handles wildcard routes
-#- name: Command to enable the wildcard routes in the OCP cluster for 3scale
-#  shell: "oc set env dc/router ROUTER_ALLOW_WILDCARD_ROUTES=true -n default"
-#  ignore_errors: true
-
-################      Multitenant  API Manager        #####################
-
-- name: "Make conditional variable based on {{is_shared_cluster}}"
-  set_fact:
-    threescale_template: "{{threescale_template_shared}}"
-  when: is_shared_cluster|bool
-- set_fact:
-    threescale_template: "{{threescale_template_dedicated}}"
-  when: not is_shared_cluster|bool
-
-- name: Ensure {{work_dir}} exists
-  file:
-    path: "{{work_dir}}"
-    state: directory
 
 - name: Delete default limitrange
   shell: |
     oc delete limitrange {{API_MANAGER_NS}}-core-resource-limits -n {{API_MANAGER_NS}}
   ignore_errors: true
+  when: limit_range_changes_needed|bool
 
 - name: Create a new limitrange
   template:
     src: templates/limitrange.yaml
     dest: "{{work_dir}}/limitrange.yaml"
+  when: limit_range_changes_needed|bool
 - shell: |
     oc create -f {{work_dir}}/limitrange.yaml -n {{ API_MANAGER_NS }}
+  when: limit_range_changes_needed|bool
 
-- name: "Create threescale-registry-auth image pull secret in {{ API_MANAGER_NS }}"
-  shell: |
-    oc create secret docker-registry threescale-registry-auth \
-        --docker-server=registry.redhat.io \
-        --docker-username='{{ rht_service_token_user }}' \
-        --docker-password={{ rht_service_token_password }} \
-        -n  {{ API_MANAGER_NS }}
 
-- name: "Download {{ threescale_template }}"
+################      Multitenant  API Manager        #####################
+
+- name: "create directory: {{ new_app_output_dir }}"
+  command: mkdir -p {{ new_app_output_dir }}
+
+- name: "Download {{ apimanager_template_url }}"
   get_url:
-    url: "{{ threescale_template }}"
+    url: "{{ apimanager_template_url }}"
     dest: "{{ modified_template_path }}"
     force: yes
-  when: api_project_result is failed
 
 - name: Place all deployments in a paused state
   replace:
@@ -128,17 +97,15 @@
                  -p "MASTER_PASSWORD={{amp_master_passwd}}" \
                  -p "MASTER_ACCESS_TOKEN={{master_access_token}}" \
                  -p "TENANT_NAME={{ default_tenant_name  }}" \
-                 -p "ADMIN_PASSWORD={{ amp_admin_passwd }}" \
+                 -p "ADMIN_PASSWORD={{ default_tenant_admin_passwd }}" \
                  -p "ADMIN_ACCESS_TOKEN={{ default_tenant_access_token }}" \
-                 -p "WILDCARD_DOMAIN={{ ocp_apps_domain }}" \
+                 -p "WILDCARD_DOMAIN={{  ocp_domain }}" \
                  -n "{{ API_MANAGER_NS }}" \
                  > {{new_app_output}}
-  when: api_project_result is failed
 
 - name: output message
   debug:
     msg: new-app output available at {{new_app_output}}
-  when: api_project_result is failed
 
 # Only set-up smtp if all settings are correct
 # Otherwise, errors will be thrown during provisioning of tenents if smtp settings are incorrect
@@ -165,7 +132,6 @@
     - system-mysql
     - system-redis
     - zync-database
-  when: api_project_result is failed
 
 - include_tasks: wait_for_deploy.yml
   vars:
@@ -175,7 +141,6 @@
       - system-mysql
       - system-redis
       - zync-database
-  when: api_project_result is failed
 
 
 # #### Backend Listeners
@@ -184,25 +149,21 @@
   with_items:
     - backend-listener
     - backend-worker
-  when: api_project_result is failed
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - backend-listener
       - backend-worker
-  when: api_project_result is failed
 
 # #### System Tier
 - name: "Resume {{with_items}}"
   command: oc rollout resume dc/"{{ item }}" -n "{{ API_MANAGER_NS }}"
   with_items:
     - system-app
-  when: api_project_result is failed
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - system-app
-  when: api_project_result is failed
 
 # #### Utility Tier
 - name: "Resume {{with_items}}"
@@ -211,14 +172,12 @@
     - system-sidekiq
     - system-sphinx
     - backend-cron
-  when: api_project_result is failed
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - system-sidekiq
       - system-sphinx
       - backend-cron
-  when: api_project_result is failed
 
 
 # #### Gateway Tier
@@ -227,13 +186,13 @@
   with_items:
     - apicast-staging
     - apicast-production
-  when: RESUME_CONTROL_PLANE_GWS and api_project_result is failed
+  when: RESUME_CONTROL_PLANE_GWS
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - apicast-staging
       - apicast-production
-  when: RESUME_CONTROL_PLANE_GWS and api_project_result is failed
+  when: RESUME_CONTROL_PLANE_GWS
 
 # #### Zync / RHSSO Sync Tier
 - name: "Resume {{with_items}}"
@@ -241,13 +200,11 @@
   with_items:
     - zync
     - zync-que
-  when: api_project_result is failed
 - include_tasks: wait_for_deploy.yml
   vars:
     pod_to_wait:
       - zync
       - zync-que
-  when: api_project_result is failed
 
 ###################################################################
 

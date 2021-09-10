@@ -1,0 +1,10 @@
+# Includes fix for:  https://github.com/3scale/3scale-amp-openshift-templates/pull/64
+threescale_version: 3scale-2.10.0-GA-jbride
+apimanager_template_url: "https://raw.githubusercontent.com/jbride/3scale-amp-openshift-templates/{{ threescale_version }}/amp/amp.yml"
+tenant_api_gw_template_url: "https://raw.githubusercontent.com/jbride/3scale-amp-openshift-templates/{{ threescale_version }}/apicast-gateway/apicast.yml"
+
+OCP_AMP_ADMIN_ID: api0
+lab_name: 3scale-mt
+API_MANAGER_NS: "{{lab_name}}-{{OCP_AMP_ADMIN_ID}}"
+
+openshift_cli: oc

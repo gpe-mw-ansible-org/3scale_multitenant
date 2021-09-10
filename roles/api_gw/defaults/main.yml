@@ -1,0 +1,15 @@
+---
+
+apicast_secret: apicast-configuration-url-secret
+stage_apicast_name: gw-stage
+prod_apicast_name: gw-prod
+
+
+# Will be similar to: c06015d7fba524064feaf5ae6b24e1a8
+# This can be the "Provider API key" of your 3scale Admin: 
+threescale_tenant_admin_accesstoken:
+
+# Will be similar to: vplanner-admin.apps.rhtnckpmg.rhsledocp.com
+threescale_tenant_admin_hostname:
+
+threescale_tenant_admin_endpoint: "https://{{ threescale_tenant_admin_accesstoken }}@{{ threescale_tenant_admin_hostname }}"

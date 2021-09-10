@@ -1,0 +1,25 @@
+---
+
+- name: Deploy threescale APIcast gateways
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  run_once: true
+
+  tasks:
+    - set_fact:
+        namespace: "{{ project_name }}"
+        work_dir_name: "{{ project_name }}"
+    - include_role:
+        name: ../roles/threescale
+      when: >
+        ACTION is not defined or
+        ACTION is none or
+        ACTION|trim() == "" or
+        ACTION|trim() == "install"
+    - include_role:
+        name: ../roles/threescale
+        tasks_from: uninstall
+      when: >
+        ACTION is defined and
+        ACTION|trim() == "uninstall"

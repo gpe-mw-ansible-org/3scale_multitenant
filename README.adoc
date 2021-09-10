@@ -7,6 +7,32 @@
 
 :numbered:
 
+== TLDR
+
+. *threescale_version*
++
+Optional
++
+Default = 3scale-2.10.0-GA-jbride
++
+Other tags are listed link:https://github.com/3scale/3scale-amp-openshift-templates/tags[here]
+
+. *threescale_tenant_admin_accesstoken*
++
+Required
++
+Value of the following variable when the 3scale tenant was created:  _ADMIN_ACCESS_TOKEN_ .
+Alternatively, a new access token can be created from the 3scale tenant admin UI: _Gear Icon -> Personal Settings -> Tokens -> Access Tokens -> Add Access Token_
+Alternatively, this can be the "Provider API key" of your 3scale tenant admin.
+
+. *threescale_tenant_admin_hostname*
++
+Required
++
+_provider admin_ route URL of target 3scale tenant
++
+ie:  t1-admin.apps.cluster-4663.4663.sandbox758.opentlc.com
+
 == Overview
 
 This workload provisions a single centralized 3scale API Manager in a single OCP namespace.
@@ -169,12 +195,6 @@ RESUME_CONTROL_PLANE_GWS=false          #   3scale API Manager includes a stagin
 
 
 
-SUBDOMAIN_BASE=<change me>              #   OCP wildcard DNS after "apps";  ie; 2345.openshift.opentlc.com
-                                        #   examples:
-                                        #       oc cluster up vm:   SUBDOMAIN_BASE=clientvm.`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
-                                        #       ravello vm      :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'-' -f 2 | cut -d':' -f 1`
-                                        #       ocp workshop    :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5 | cut -d':' -f 1`
-                                        #       ocp 4 workshop  :   SUBDOMAIN_BASE=`oc whoami --show-server | cut -d'.' -f 2,3,4,5,6 | cut -d':' -f 1`
 
 use_rwo_for_cms=false                   #   3scale control plane consists of a Content Management System (CMS) that typically is scaled out for improved performance in a production environment
                                         #   This CMS subsequently requires a ReadWriteMany access mode for its corresponding "system-storage" PVC
@@ -222,20 +242,13 @@ The OCP namespace for 3scale multi-tenant app will be owned by the following use
 -----
 
 # API manager provision
-$ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
-                    -e"ACTION=apimanager" \
-                    -e"subdomain_base=$SUBDOMAIN_BASE" \
-                    -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
-                    -e"API_MANAGER_NS=$API_MANAGER_NS" \
-                    -e"smtp_port=$smtp_port" \
-                    -e"smtp_authentication=$smtp_authentication" \
-                    -e"smtp_host=$smtp_host" \
-                    -e"smtp_userid=$smtp_userid" \
-                    -e"smtp_passwd=$smtp_passwd" \
-                    -e"is_shared_cluster=true" \
-                    -e"rht_service_token_user=$rht_service_token_user" \
-                    -e"rht_service_token_password=$rht_service_token_password" \
-                    -e"use_rwo_for_cms=$use_rwo_for_cms"
+$ ansible-playbook playbooks/apimanager.yml \ 
+       -e"use_rwo_for_cms=$use_rwo_for_cms" \
+       -e"smtp_port=$smtp_port" \
+       -e"smtp_authentication=$smtp_authentication" \
+       -e"smtp_host=$smtp_host" \
+       -e"smtp_userid=$smtp_userid" \
+       -e"smtp_passwd=$smtp_passwd"
 -----
 
 . After about 5 minutes, provisioning of the  API Manager should complete.
@@ -276,7 +289,6 @@ use_padded_tenant_numbers=true             #   if creating sequential generic te
 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=tenant_mgmt" \
-                    -e"subdomain_base=$SUBDOMAIN_BASE" \
                     -e"API_MANAGER_NS=$API_MANAGER_NS" \
                     -e"start_tenant=$START_TENANT" \
                     -e"end_tenant=$END_TENANT" \
@@ -329,7 +341,6 @@ gw_project_name=$orgName-gw
 
 $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=tenant_mgmt" \
-                    -e"subdomain_base=$SUBDOMAIN_BASE" \
                     -e"API_MANAGER_NS=$API_MANAGER_NS" \
                     -e"adminEmailUser=$adminEmailUser" \
                     -e"adminEmailDomain=$adminEmailDomain" \
@@ -360,7 +371,6 @@ $ ansible-playbook -i localhost, -c local /tmp/3scale_multitenant.yml \
                     -e"ACTION=remove" \
                     -e"OCP_AMP_ADMIN_ID=$OCP_AMP_ADMIN_ID" \
                     -e"API_MANAGER_NS=$API_MANAGER_NS" \
-                    -e"subdomain_base=$SUBDOMAIN_BASE" \
                     -e"REMOVE_TENANTS_ONLY=$REMOVE_TENANTS_ONLY"
 -----
 

@@ -1,0 +1,57 @@
+---
+
+- name: "delete {{ stage_apicast_name }}  deployment config"
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ stage_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: dc
+
+- name: delete {{ stage_apicast_name }} service
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ stage_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: service
+
+- name: delete {{ stage_apicast_name }} route
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ stage_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: route
+
+- name: delete {{ prod_apicast_name }} deployment config
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ prod_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: dc
+
+- name: delete {{ prod_apicast_name }} service
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ prod_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: service
+
+- name: delete {{ prod_apicast_name }} route
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ prod_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: route
+
+- name: delete {{ apicast_secret }}
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ apicast_secret }}"
+    namespace: "{{ namespace }}"
+    kind: secret

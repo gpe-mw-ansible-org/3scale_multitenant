@@ -1,0 +1,76 @@
+---
+
+- name: "create {{ apicast_secret }}"
+  oc_secret:
+    oc_binary: "{{ openshift_cli }}"
+    state: present
+    namespace: "{{ namespace }}"
+    name: "{{ apicast_secret }}"
+    type: generic
+    from_literal:
+      password: "{{ threescale_tenant_admin_endpoint }}"
+
+- name: "Create {{ stage_apicast_name }}; {{ threescale_tenant_admin_endpoint }}"
+  shell: |
+    oc new-app \
+           -f {{ tenant_api_gw_template_url }} \
+           --param APICAST_NAME={{ stage_apicast_name }} \
+           --param DEPLOYMENT_ENVIRONMENT=sandbox \
+           --param CONFIGURATION_LOADER=lazy \
+           --param CONFIGURATION_CACHE=0 \
+           --param MANAGEMENT_API=debug \
+           -n {{ namespace }}
+  register: create_stage_gw
+  failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
+
+# Creating apicast route; ensure that 3scale product is set to: APIcast self-managed
+#   ie:  Product -> Integration -> Settings -> Deployment -> APIcast self-managed
+- set_fact:
+    service: "{{ stage_apicast_name }}"
+    route_hostname: "{{ stage_apicast_name }}-{{ namespace }}.{{ ocp_domain_host.stdout }}"
+- name: "copy route template"
+  template:
+    src: "{{ resources_dir }}/route.yml"
+    dest: "{{ work_dir }}/route.yml"
+- name: "deploy {{ stage_apicast_name }} route {{ route_hostname }}"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ stage_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: route
+    files:
+      - "{{ work_dir }}/route.yml"
+  ignore_errors: true
+
+- name: "Create {{ prod_apicast_name }}; {{ threescale_tenant_admin_endpoint }}"
+  shell: |
+    oc new-app \
+           -f {{ tenant_api_gw_template_url }} \
+           --param APICAST_NAME={{ prod_apicast_name }} \
+           --param DEPLOYMENT_ENVIRONMENT=production \
+           --param CONFIGURATION_LOADER=boot \
+           -n {{ namespace }}
+  register: create_prod_gw
+  failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
+  ignore_errors: true
+
+# Creating apicast route; ensure that 3scale product is set to: APIcast self-managed
+#   ie:  Product -> Integration -> Settings -> Deployment -> APIcast self-managed
+- set_fact:
+    service: "{{ prod_apicast_name }}"
+    route_hostname: "{{ prod_apicast_name }}-{{ namespace }}.{{ ocp_domain_host.stdout }}"
+- name: "copy route template"
+  template:
+    src: "{{ resources_dir }}/route.yml"
+    dest: "{{ work_dir }}/route.yml"
+- name: "deploy {{ prod_apicast_name }} route {{ route_hostname }}"
+  oc_obj:
+    state: present
+    oc_binary: "{{ openshift_cli }}"
+    name: "{{ prod_apicast_name }}"
+    namespace: "{{ namespace }}"
+    kind: route
+    files:
+      - "{{ work_dir }}/route.yml"
+

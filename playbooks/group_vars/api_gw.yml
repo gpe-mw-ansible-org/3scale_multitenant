@@ -1,0 +1,3 @@
+gw_admin: user1
+
+gw_namespace: "{{ gw_admin }}-gw"

@@ -1,0 +1,17 @@
+---
+
+- name: Remove user Quota - oc delete clusterresourcequota  "clusterquota-{{OCP_AMP_ADMIN_ID}}"
+  oc_obj:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "clusterquota-{{OCP_AMP_ADMIN_ID}}"
+    kind: clusterresourcequota
+  
+#  shell: oc delete clusterresourcequota clusterquota-{{OCP_AMP_ADMIN_ID}}
+#  ignore_errors: true
+
+- name: "Remove Project {{ API_MANAGER_NS }}"
+  oc_project:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ API_MANAGER_NS }}"
