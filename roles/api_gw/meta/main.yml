@@ -2,6 +2,11 @@
 
 dependencies:
   - role: work_dir
+    when: >
+      ACTION is not defined or
+      ACTION is none or
+      ACTION|trim() == "" or
+      ACTION|trim() == "install"
   - role: openshift_project
     when: >
       ACTION is not defined or
@@ -9,3 +14,8 @@ dependencies:
       ACTION|trim() == "" or
       ACTION|trim() == "install"
   - role: openshift_domain
+    when: >
+      ACTION is not defined or
+      ACTION is none or
+      ACTION|trim() == "" or
+      ACTION|trim() == "install"

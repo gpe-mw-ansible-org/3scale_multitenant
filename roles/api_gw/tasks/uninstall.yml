@@ -55,3 +55,10 @@
     name: "{{ apicast_secret }}"
     namespace: "{{ namespace }}"
     kind: secret
+
+- name: "Remove Project {{ namespace }}"
+  oc_project:
+    oc_binary: "{{ openshift_cli }}"
+    state: absent
+    name: "{{ namespace }}"
+

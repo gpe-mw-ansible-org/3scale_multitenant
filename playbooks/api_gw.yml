@@ -5,20 +5,23 @@
   connection: local
   gather_facts: false
   run_once: true
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/api_gw.yml
 
   tasks:
     - set_fact:
-        namespace: "{{ project_name }}"
-        work_dir_name: "{{ project_name }}"
+        namespace: "{{ gw_namespace }}"
+        work_dir_name: "{{ gw_namespace }}"
     - include_role:
-        name: ../roles/threescale
+        name: ../roles/api_gw
       when: >
         ACTION is not defined or
         ACTION is none or
         ACTION|trim() == "" or
         ACTION|trim() == "install"
     - include_role:
-        name: ../roles/threescale
+        name: ../roles/api_gw
         tasks_from: uninstall
       when: >
         ACTION is defined and

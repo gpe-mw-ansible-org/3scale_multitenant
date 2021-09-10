@@ -23,6 +23,17 @@
   register: create_stage_gw
   failed_when: create_stage_gw.stderr != ""  and 'already exists' not in create_stage_gw.stderr
 
+- name: "wait until {{ stage_apicast_name }} dc is up and running"
+  shell: "{{ openshift_cli }} get dc {{ stage_apicast_name }} -o template --template={{ json_template }} -n {{ namespace }}"
+  vars:
+    json_template: '\{\{.status.readyReplicas\}\}'
+  register: result
+  until: result.stdout == "1"
+  retries: 10
+  delay: 30
+  changed_when: false
+
+
 # Creating apicast route; ensure that 3scale product is set to: APIcast self-managed
 #   ie:  Product -> Integration -> Settings -> Deployment -> APIcast self-managed
 - set_fact:
@@ -30,7 +41,7 @@
     route_hostname: "{{ stage_apicast_name }}-{{ namespace }}.{{ ocp_domain_host.stdout }}"
 - name: "copy route template"
   template:
-    src: "{{ resources_dir }}/route.yml"
+    src: route.yml
     dest: "{{ work_dir }}/route.yml"
 - name: "deploy {{ stage_apicast_name }} route {{ route_hostname }}"
   oc_obj:
@@ -55,6 +66,16 @@
   failed_when: create_prod_gw.stderr != ""  and 'already exists' not in create_prod_gw.stderr
   ignore_errors: true
 
+- name: "wait until {{ prod_apicast_name }} dc is up and running"
+  shell: "{{ openshift_cli }} get dc {{ prod_apicast_name }} -o template --template={{ json_template }} -n {{ namespace }}"
+  vars:
+    json_template: '\{\{.status.readyReplicas\}\}'
+  register: result
+  until: result.stdout == "1"
+  retries: 10
+  delay: 30
+  changed_when: false
+
 # Creating apicast route; ensure that 3scale product is set to: APIcast self-managed
 #   ie:  Product -> Integration -> Settings -> Deployment -> APIcast self-managed
 - set_fact:
@@ -62,7 +83,7 @@
     route_hostname: "{{ prod_apicast_name }}-{{ namespace }}.{{ ocp_domain_host.stdout }}"
 - name: "copy route template"
   template:
-    src: "{{ resources_dir }}/route.yml"
+    src: route.yml
     dest: "{{ work_dir }}/route.yml"
 - name: "deploy {{ prod_apicast_name }} route {{ route_hostname }}"
   oc_obj:

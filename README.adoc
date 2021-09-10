@@ -9,14 +9,6 @@
 
 == TLDR
 
-. *threescale_version*
-+
-Optional
-+
-Default = 3scale-2.10.0-GA-jbride
-+
-Other tags are listed link:https://github.com/3scale/3scale-amp-openshift-templates/tags[here]
-
 . *threescale_tenant_admin_accesstoken*
 +
 Required
@@ -32,6 +24,29 @@ Required
 _provider admin_ route URL of target 3scale tenant
 +
 ie:  t1-admin.apps.cluster-4663.4663.sandbox758.opentlc.com
+
+. *gw_namespace*
++
+Optional
++
+Default = user1-gw
+
+. *threescale_version*
++
+Optional
++
+Default = 3scale-2.10.0-GA-jbride
++
+Other tags are listed link:https://github.com/3scale/3scale-amp-openshift-templates/tags[here]
+
+. Deploy apicast gateways
++
+-----
+$ $ ansible-playbook playbooks/api_gw.yml \
+      -e threescale_tenant_admin_accesstoken=$threescale_tenant_admin_accesstoken \
+      -e threescale_tenant_admin_hostname=$threescale_tenant_admin_hostname
+-----
+
 
 == Overview
 
