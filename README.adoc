@@ -195,7 +195,9 @@ Corresponding gateways will also be created in a namespace called: _ocp01_.
 +
 Optional:  Default value = ocp01 
 +
-Specifies name of tenant as well as namespace where corresponding gateways will be provisioned.
+Specifies name of tenant as well as name of namespace where corresponding gateways will be provisioned.
++
+Useful if the intent is to create a single tenant with a specific name.
 
 . _tenant_admin_user_name_base_
 +
