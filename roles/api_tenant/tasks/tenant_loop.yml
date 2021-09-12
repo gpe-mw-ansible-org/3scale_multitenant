@@ -23,10 +23,10 @@
       tenantAdminId: "{{ tenant_admin_user_name_base }}{{ counter }}"
   
   - set_fact:
-      orgName: "{{ ocpAdminId }}-{{ API_MANAGER_NS }}"
-
-  - set_fact:
-      gw_project_name: "{{ ocpAdminId }}-gw"
+      orgName: "{{ ocpAdminId }}"
+    when:
+      orgName is not defined or
+      orgName is none
 
   when: item > 0
 
@@ -42,11 +42,11 @@
 #  ################################             Create Tenant            ##################################### #
 
 - block:
-    - name: "{{ ocpAdminId }}      1)  **********   TENANT CREATION  **********"
+    - name: "{{ orgName }}      1)  **********   TENANT CREATION  **********"
       set_fact:
         tenantAdminEmail: "{{ adminEmailUser }}%2B{{ counter }}%40{{ adminEmailDomain }}"
     - debug:
-        msg: "{{ ocpAdminId }} tenantAdminEmail = {{ tenantAdminEmail }}"
+        msg: "{{ orgName }} tenantAdminEmail = {{ tenantAdminEmail }}"
     - debug:
         msg: "{{ create_tenant_url }}"
         
@@ -68,12 +68,12 @@
         validate_certs: no
       register: create_tenant_response
 
-    - name: "{{ ocpAdminId }}     2) copy response to {{ tenant_output_dir }}/{{ output_file }}"
+    - name: "{{ orgName }}     2) copy response to {{ tenant_output_dir }}/{{ output_file }}"
       copy:
         content: "{{ create_tenant_response.content }}"
         dest: "{{ tenant_output_dir }}/{{ output_file }}"
 
-    - name: "{{ ocpAdminId }}     3) parse xml and extract access token, account_id and user_id"
+    - name: "{{ orgName }}     3) parse xml and extract access token, account_id and user_id"
       xml:
         path: "{{ tenant_output_dir }}/{{ output_file }}"
         xpath: //access_token/value
@@ -93,7 +93,7 @@
         msg: "{{ tenant_access_token.matches[0].value }}  {{ account_id.matches[0].id }} {{ user_id.matches[0].id }}"
         verbosity: 0
 
-    - name: "{{ ocpAdminId }}     4) activate new user"
+    - name: "{{ orgName }}     4) activate new user"
       set_fact:
         activate_user_url: "https://{{ API_MANAGER_NS }}-master.{{ ocp_domain }}/admin/api/accounts/{{ account_id.matches[0].id }}/users/{{ user_id.matches[0].id }}/activate.xml"
     - uri:
@@ -106,10 +106,10 @@
         validate_certs: no
       register: activate_user_response
 
-    - name: "{{ ocpAdminId }}     5) Give user view access to 3scale project."
+    - name: "{{ orgName }}     5) Give user view access to 3scale project."
       command: "oc adm policy add-role-to-user view {{ ocpAdminId }} -n {{ API_MANAGER_NS }}"
 
-    - name: "{{ ocpAdminId }}  6) Populate {{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
+    - name: "{{ orgName }}  6) Populate {{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
       lineinfile: 
         line: "{{ ocpAdminId }}\t{{ orgName }}-admin.{{ ocp_domain }}\t{{ tenantAdminId }}\t{{ tenantAdminPasswd }}\t{{ tenant_access_token.matches[0].value }}"
         path: "{{ tenant_output_dir }}/{{ tenant_provisioning_results_file }}"
@@ -123,9 +123,9 @@
     name: ../roles/api_gw
   vars:
     threescale_tenant_admin_accesstoken: "{{ tenant_access_token.matches[0].value }}"
-    threescale_tenant_admin_hostname: "{{ ocpAdminId }}-{{ API_MANAGER_NS }}-admin.{{ ocp_domain }}"
-    namespace: "{{ ocpAdminId }}-gw"
-    work_dir_name: "{{ ocpAdminId }}-gw"
+    threescale_tenant_admin_hostname: "{{ orgName }}-admin.{{ ocp_domain }}"
+    namespace: "{{ orgName }}"
+    work_dir_name: "{{ orgName }}-gw"
   when: create_gws_with_each_tenant|bool
  
 - pause:

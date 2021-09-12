@@ -30,7 +30,7 @@ new_app_output_dir: "{{ lookup('env','HOME') }}/provisioning_output/{{ ocp_domai
 new_app_output: "{{new_app_output_dir}}/{{API_MANAGER_NS}}-out.log"
 
 ######  OLD #####
-is_shared_cluster: false
+is_production: false
 
 ocp_user_groups:
   - OPENTLC-PROJECT-PROVISIONERS
