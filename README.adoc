@@ -52,6 +52,10 @@ This version of OpenShift should already be pre-installed before executing this 
 
 The ansible describe in this section can provision a 3scale API Manager using OpenShift _templates_.
 
+=== Known Problems
+
+. link:https://issues.redhat.com/browse/THREESCALE-5725[API Manager on FIPS compliant OpenShift] .   Target fix:  3scale 2.12
+
 === Resource requirements
 
 This ansible role allows for provisioning of 3scale of different sizes based on the value of the following ansible variable: _is_production_
